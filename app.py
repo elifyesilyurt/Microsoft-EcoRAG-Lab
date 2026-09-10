@@ -37,8 +37,8 @@ from dynamic_math_engine import (
 # ══════════════════════════════════════════════════════════════════════════════
 DB_PATH = "rag_storage.db"
 EMBEDDING_MODEL_NAME = "nomic-ai/nomic-embed-text-v1.5"
-FOUNDRY_BASE_URL = "http://127.0.0.1:62095"
-MODEL_NAME = "phi-4-mini"
+FOUNDRY_BASE_URL = os.getenv("FOUNDRY_BASE_URL", "http://127.0.0.1:62095")
+MODEL_NAME = os.getenv("FOUNDRY_MODEL_NAME", "phi-4-mini")
 
 RELATIVE_DROP_RATIO = 0.70
 MAX_K = 6
@@ -155,8 +155,14 @@ def load_embedder():
 
 embedder = load_embedder()
 
+def get_foundry_base_url() -> str:
+    if "foundry_base_url" in st.session_state and st.session_state.foundry_base_url:
+        return st.session_state.foundry_base_url.rstrip("/")
+    return FOUNDRY_BASE_URL.rstrip("/")
+
 def query_foundry(system_prompt: str, user_prompt: str, temperature: float = 0.0) -> str:
-    url = f"{FOUNDRY_BASE_URL}/v1/chat/completions"
+    base_url = get_foundry_base_url()
+    url = f"{base_url}/v1/chat/completions"
     headers = {
         "Content-Type": "application/json",
         "Connection": "close"
@@ -178,11 +184,17 @@ def query_foundry(system_prompt: str, user_prompt: str, temperature: float = 0.0
                 return res.json()["choices"][0]["message"]["content"].strip()
             else:
                 raise RuntimeError(f"HTTP {res.status_code}: {res.text}")
+    except requests.exceptions.ConnectionError:
+        raise ConnectionError(
+            f"Foundry Local / LLM servisine bağlanılamadı ({base_url}). "
+            f"Lütfen servisin çalıştığından emin olun veya 'FOUNDRY_BASE_URL' ortam değişkenini/kenar çubuğunu ayarlayın."
+        )
     finally:
         gc.collect()
 
 def query_foundry_stream(system_prompt: str, user_prompt: str, temperature: float = 0.0):
-    url = f"{FOUNDRY_BASE_URL}/v1/chat/completions"
+    base_url = get_foundry_base_url()
+    url = f"{base_url}/v1/chat/completions"
     headers = {
         "Content-Type": "application/json",
         "Connection": "close"
@@ -240,6 +252,12 @@ def query_foundry_stream(system_prompt: str, user_prompt: str, temperature: floa
                     for word in ans.split(" "):
                         yield word + " "
                         time.sleep(0.015)
+    except requests.exceptions.ConnectionError:
+        yield (
+            f"⚠️ **Bağlantı Hatası:** LLM servisine ulaşılamadı (`{base_url}`). "
+            "Lütfen Foundry Local / yerel model servisinizin çalıştığından emin olun veya "
+            "kenar çubuğundan / `FOUNDRY_BASE_URL` ortam değişkeninden adresi güncelleyin."
+        )
     except Exception:
         try:
             ans = query_foundry(system_prompt, user_prompt, temperature)
@@ -673,7 +691,16 @@ with st.sidebar:
         except Exception:
             total_chunks_db = 1044
         st.markdown(f"<div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;'><span class='sidebar-metric-label'>{T['status_index']}</span><code>{total_chunks_db} Chunks</code></div>", unsafe_allow_html=True)
-        st.markdown(f"<div style='display: flex; justify-content: space-between; align-items: center;'><span class='sidebar-metric-label'>{T['status_engine']}</span><code>PAL + IR</code></div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;'><span class='sidebar-metric-label'>{T['status_engine']}</span><code>PAL + IR</code></div>", unsafe_allow_html=True)
+        with st.expander("⚙️ LLM Endpoint", expanded=False):
+            endpoint_input = st.text_input(
+                "Foundry URL",
+                value=st.session_state.get("foundry_base_url", FOUNDRY_BASE_URL),
+                key="foundry_base_url_input",
+                help="Varsayılan: http://127.0.0.1:62095 veya yerel proxy"
+            )
+            if endpoint_input != st.session_state.get("foundry_base_url", FOUNDRY_BASE_URL):
+                st.session_state.foundry_base_url = endpoint_input
 
     st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
     if st.button(T["reset_btn"], icon=":material/delete:", width="stretch"):

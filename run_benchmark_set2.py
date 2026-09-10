@@ -29,8 +29,8 @@ sys.path.insert(0, REPO_DIR)
 
 # ── Config (mirrors app.py) ───────────────────────────────────────────────────
 EMBEDDING_MODEL_NAME = "nomic-ai/nomic-embed-text-v1.5"
-FOUNDRY_BASE_URL     = "http://127.0.0.1:62095"
-MODEL_NAME           = "Phi-4-mini-instruct-generic-gpu"
+FOUNDRY_BASE_URL     = os.getenv("FOUNDRY_BASE_URL", "http://127.0.0.1:62095")
+MODEL_NAME           = os.getenv("FOUNDRY_MODEL_NAME", "Phi-4-mini-instruct-generic-gpu")
 RELATIVE_DROP_RATIO  = 0.70
 MAX_K                = 6
 MIN_SCORE_FLOOR      = 0.15

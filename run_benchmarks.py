@@ -51,8 +51,9 @@ from esg_tables import (
 
 DB_PATH         = "rag_storage.db"
 EMBEDDING_MODEL = "nomic-ai/nomic-embed-text-v1.5"
-FOUNDRY_URL     = "http://127.0.0.1:62095/v1/chat/completions"
-PHI_MODEL       = "phi-4-mini"
+FOUNDRY_BASE_URL = os.getenv("FOUNDRY_BASE_URL", "http://127.0.0.1:62095")
+FOUNDRY_URL      = f"{FOUNDRY_BASE_URL}/v1/chat/completions"
+PHI_MODEL        = os.getenv("FOUNDRY_MODEL_NAME", "phi-4-mini")
 MAX_K           = 6
 DROP_RATIO      = 0.70
 MIN_SCORE       = 0.15

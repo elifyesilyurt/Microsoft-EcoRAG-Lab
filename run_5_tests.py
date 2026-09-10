@@ -18,7 +18,7 @@ from dynamic_math_engine import (
     is_mathematical_query
 )
 
-FOUNDRY_BASE_URL = "http://127.0.0.1:62095"
+FOUNDRY_BASE_URL = os.getenv("FOUNDRY_BASE_URL", "http://127.0.0.1:62095")
 MODEL_NAME = "phi-4-mini"
 
 TESTS = [
