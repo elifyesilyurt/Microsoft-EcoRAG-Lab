@@ -81,39 +81,31 @@ MIN_SCORE_FLOOR = 0.15
 
 def get_synthesis_prompt(lang: str = "tr") -> str:
     if lang == "tr":
-        return """Sen uzman bir Sürdürülebilirlik Baş Analistisin.
-Aşağıda verilen doğrulanmış analitik hesaplama ve rapor verilerini kullanarak soruyu yanıtla.
-STANDART CEVAP ŞABLONU VE ANLATIM KURALLARI:
-1. Yanıtını MUTLAKA şu 3 standart bölümde yapılandır:
-   - '### 🎯 Doğrudan Yanıt': Sorunun geçerli, kesin ve doğrudan cevabını İLK CÜMLEDE açıkça ver. Aranan rakam, oran, kurum veya sonucu en başta vurgula.
-   - '### 📊 Doğrulanmış Rapor Tablosu & Veri Detayı': Raporlanan verileri, metrikleri veya karşılaştırmaları temiz bir Markdown tablosu olarak sun.
-   - '### 💡 Stratejik Aksiyon & Raporlanan İlerleme': Microsoft'un raporda bildirdiği temel kurumsal aksiyonu 1-2 kısa maddede özetle.
-2. Gereksiz giriş cümlelerinden, dolgu ifadelerinden ve soruyu baştan tekrarlamaktan kesinlikle kaçın.
-3. Motamot/kelime kelime yapılmış çeviri kokan anlatımlardan kaçın; akıcı ve kurumsal bir Türkçe kullan.
-4. Doğrulanmış sayısal verileri ve birimleri (mtCO2e, metrik ton, m³, MWh, %) değiştirmeden kullan."""
+        return """Sen Microsoft'un resmi sürdürülebilirlik raporları (2024, 2025, 2026) konusunda uzmanlaşmış kıdemli bir analistsin.
+Soruyu modern, akıcı bir yapay zeka asistanı (Gemini / ChatGPT) üslubuyla doğrudan yanıtla.
+KURALLAR:
+1. 'Doğrudan Yanıt:', 'Yönetici Özeti:' veya şablon başlıkları KULLANMA. Sorunun kesin cevabına İLK CÜMLEDE doğrudan başla.
+2. Yıllar arası değişim, oranlar veya birden fazla metrik içeren konularda verileri mutlaka temiz bir Markdown tablosu ile sun.
+3. Raporlanan kurumsal strateji ve aksiyonları net, okunabilir madde işaretleri (bullet points) ile özetle.
+4. Yalnızca raporda doğrulanmış sayıları, birimleri ve verileri kullan. Asla uydurma veri üretme."""
     else:
-        return """You are a Senior Sustainability Analyst.
-You MUST structure your response into these 3 standardized sections:
-1. '### 🎯 Direct Answer': Provide the exact, valid answer to the question immediately in the very first 1-2 sentences.
-2. '### 📊 Verified Metrics & Report Findings Table': Present multi-metric figures, comparisons, or categories in a clean Markdown table.
-3. '### 💡 Strategic Action & Progress': Summarize core Microsoft initiatives in 1-2 concise bullet points.
-Avoid repetitive filler, preamble, or question restatement. Keep exact figures and units intact."""
+        return """You are a Senior Sustainability Analyst specializing in Microsoft's Sustainability Reports.
+Answer directly, authoritatively, and fluently in the natural style of modern AI assistants (like ChatGPT or Gemini).
+GUIDELINES:
+1. DO NOT use rigid template headers like 'Direct Answer:' or 'Executive Summary:'. State the exact answer directly in the very first sentence.
+2. When questions involve multi-year trends, comparisons, or metric breakdowns, present them in a clean Markdown table.
+3. For strategic initiatives or reported corporate actions, use concise bullet points.
+4. Retain exact verified figures and units without alteration or hallucination."""
 
 def get_factual_synthesis_prompt(lang: str = "tr") -> str:
     if lang == "tr":
         return """Sen uzman bir Sürdürülebilirlik Baş Analistisin.
-Aşağıda verilen doğrulanmış metrikleri kullanarak doğrudan, akıcı, kurumsal bir Türkçe yanıt oluştur.
-STANDART CEVAP DÜZENİ:
-1. '### 🎯 Doğrudan Yanıt': Sorunun geçerli, kesin cevabını İLK OLARAK 1-2 cümlede doğrudan açıkla. Sayısal değeri veya olguyu en başta ver.
-2. '### 📊 Doğrulanmış Metrik & Veri Tablosu': İlgili verileri temiz ve hizalı bir Markdown Tablosu ile özetle.
-3. '### 💡 Stratejik Aksiyon': 1 kısa maddede Microsoft'un resmi rapordaki aksiyonunu sun.
-Asla soruyu baştan tekrar etme, gereksiz laf kalabalığından kaçın."""
+Verilen doğrulanmış metrikleri kullanarak doğrudan, akıcı ve profesyonel bir yanıt oluştur.
+Kalıp başlıklar (Doğrudan Yanıt vb.) KULLANMADAN cevaba doğrudan başla. Verileri gerektiğinde Markdown tablosu veya maddeler halinde düzenle."""
     else:
         return """You are a Senior Sustainability AI Analyst.
-Structure your response in this standard 3-part layout:
-1. '### 🎯 Direct Answer': State the exact, valid answer to the question immediately in the first sentence.
-2. '### 📊 Verified Metrics Table': Present metrics and data in a clean Markdown table.
-3. '### 💡 Strategic Action': Provide 1-2 concise bullet points on corporate action without filler."""
+Using the verified metrics, formulate a direct, authoritative, and fluent response.
+Start directly with the core answer without artificial headers (e.g. 'Direct Answer:'). Format multi-value metrics into a clear Markdown table and concise bullets."""
 
 def detect_query_language(query: str, default_lang: str = "tr") -> str:
     if not query:
@@ -552,10 +544,9 @@ def compute_carbon_trend_summary(lang: str = "tr") -> str:
 
     if lang == "tr":
         lines = [
-            "### 🎯 Doğrudan Yanıt & 📌 Yönetici Özeti",
-            f"> **Net Cevap:** FY20 baz yılından FY25'e kadar Microsoft'un toplam sera gazı emisyonları (Scope 1+2+3) net **+{tot_delta:,} mtCO2e (+%{tot_pct:.2f})** artarak 13,061,000'den 21,121,000 mtCO2e'ye yükselmiştir. Bu artışın ana itici gücü Scope 3 emisyonları olup, en büyük iki pay **%{cat2_share}** ile Kategori 2 (Sermaye Malları) ve **%{cat1_share}** ile Kategori 1'e (Satın Alınan Mal/Hizmetler) aittir (ikisinin toplam payı: **%{combined_share}**).",
+            f"Microsoft'un FY20 baz yılından FY25'e kadar olan toplam sera gazı emisyonları (Scope 1, 2 ve 3) net **+{tot_delta:,} mtCO2e (+%{tot_pct:.2f})** artarak 13,061,000 mtCO2e'den **21,121,000 mtCO2e** seviyesine çıkmıştır. Bu artışın ana itici gücü, yapay zeka ve küresel bulut veri merkezi altyapı yatırımları nedeniyle büyüyen Scope 3 değer zinciri emisyonlarıdır (%{cat2_share} Kategori 2 ve %{cat1_share} Kategori 1).",
             "",
-            "### 📊 Doğrulanmış Emisyon Değişimi & Sera Gazı Karşılaştırma Tablosu (FY20 Baseline ➔ FY24 ➔ FY25)",
+            "### 📊 Sera Gazı Emisyon Karşılaştırması ve Kategori Dağılımı (FY20 - FY25)",
             "",
             "| Emisyon Kapsamı (Scope) | FY20 Baz Yılı | FY24 | FY25 | Net Değişim (FY20➔FY25) | Değişim Oranı |",
             "| :--- | :---: | :---: | :---: | :---: | :---: |",
@@ -574,14 +565,13 @@ def compute_carbon_trend_summary(lang: str = "tr") -> str:
             f"| 🌐 **Diğer Scope 3 Kategorileri** | Yakıt, iş seyahati, çalışan ulaşımı, lojistik | `{int(s3['FY25'] - combined_vol):,} mtCO2e` | `%{round(100 - combined_share, 2)}` |",
             f"| 🎯 **Toplam Scope 3 Hacmi** | Tüm Değer Zinciri Kümülatif | `{int(s3['FY25']):,} mtCO2e` | **%100.0** |",
             "",
-            "### 💡 Stratejik Önlem & Aksiyon",
+            "### 💡 Temel Stratejik Aksiyonlar",
             "* **Karbon Uzaklaştırma:** Microsoft, bu değer zinciri artışını nötrlemek amacıyla 21.9 milyon tonluk rekor bir karbon uzaklaştırma portföyü sözleşmesi imzalamıştır.",
-            "* **Temiz Enerji Tedariki:** 2030 Karbon Negatif hedefi doğrultusunda 34 GW'ı aşan temiz enerji alım anlaşması (PPA) yapılmıştır."
+            "* **Temiz Enerji Şartı:** Kilit tedarikçilere %100 karbonsuz elektrik kullanma zorunluluğu getirilmiş ve 34 GW'ı aşan temiz enerji alım anlaşması (PPA) yapılmıştır."
         ]
     else:
         lines = [
-            "### 🎯 Direct Answer & 📌 Executive Takeaway",
-            f"> **Direct Answer:** Between FY20 baseline and FY25, Microsoft experienced total greenhouse gas emission growth of **+{tot_delta:,} mtCO2e (+{tot_pct:.2f}%)**, rising from 13,061,000 to 21,121,000 mtCO2e. The primary driver was Scope 3 value chain emissions, dominated by Category 2 Capital Goods (**{cat2_share}%**) and Category 1 Purchased Goods (**{cat1_share}%**), combining for **{combined_share}%** of all Scope 3.",
+            f"Between FY20 baseline and FY25, Microsoft's total greenhouse gas emissions grew by **+{tot_delta:,} mtCO2e (+{tot_pct:.2f}%)**, rising from 13,061,000 to **21,121,000 mtCO2e**. The primary driver was Scope 3 value chain emissions, dominated by Category 2 Capital Goods (**{cat2_share}%**) and Category 1 Purchased Goods (**{cat1_share}%**), which together constitute **{combined_share}%** of total Scope 3 emissions.",
             "",
             "### 📊 Verified GHG Emissions Comparison Table (FY20 Baseline ➔ FY24 ➔ FY25)",
             "",
@@ -602,7 +592,7 @@ def compute_carbon_trend_summary(lang: str = "tr") -> str:
             f"| 🌐 **Remaining Categories** | Fuel, business travel, logistics, employee commuting | `{int(s3['FY25'] - combined_vol):,} mtCO2e` | `{round(100 - combined_share, 2)}%` |",
             f"| 🎯 **Total Scope 3 Volume** | Cumulative Value Chain Inventory | `{int(s3['FY25']):,} mtCO2e` | **100.0%** |",
             "",
-            "### 💡 Strategic Context & Corporate Action",
+            "### 💡 Key Strategic Initiatives",
             "* **Carbon Removal:** Contracted a record 21.9 million mtCO2e carbon removal portfolio.",
             "* **Clean Power:** Secured over 34 GW of clean energy PPAs toward Carbon Negative 2030."
         ]
@@ -610,10 +600,9 @@ def compute_carbon_trend_summary(lang: str = "tr") -> str:
 
 def compute_carbon_commitments_summary(lang: str = "tr") -> str:
     if lang == "tr":
-        return """### 🎯 Doğrudan Yanıt & 📌 Yönetici Özeti
-> **Net Cevap:** Microsoft'un resmi raporlardaki temel karbon ve temiz enerji taahhütleri; **2030 yılına kadar Karbon Negatif olma**, **2050 yılına kadar 1975'ten beri salınan tüm tarihsel emisyonları telafi etme** ve operasyonlarını **%100 Karbonsuz Elektrik (CFE)** ile eşleştirmedir. Büyüyen elektrik tüketimi 43.8M MWh'a çıkarken temiz enerji portföyü **34 GW** PPA kapasitesine ulaşmıştır.
+        return """Microsoft'un 2024–2026 Çevresel Sürdürülebilirlik Raporlarında açıklanan temel kurumsal karbon ve enerji taahhütleri; **2030 yılına kadar Karbon Negatif olma**, **2050 yılına kadar 1975'ten beri salınan tüm tarihsel emisyonları telafi etme** ve veri merkezi operasyonlarını **%100 Karbonsuz Elektrik (CFE)** ile eşleştirmeyi içerir. Veri merkezi elektrik tüketimi 43.8M MWh'a yükselirken, temiz enerji alım anlaşmaları (PPA) **34 GW** kapasiteye ulaşmıştır.
 
-### 📊 Doğrulanmış Kurumsal Karbon ve Temiz Enerji Taahhütleri Tablosu (2024–2026 Raporları)
+### 📊 Kurumsal Karbon ve Temiz Enerji Taahhütleri Tablosu
 
 | Taahhüt & Stratejik Hedef | Hedef Yılı | Kapsam & Detaylar | Doğrulanmış Durum (FY25) |
 | :--- | :---: | :--- | :--- |
@@ -623,14 +612,13 @@ def compute_carbon_commitments_summary(lang: str = "tr") -> str:
 | 🔌 **Elektrik & PPA Kapasite Trendi** | Sürekli | Büyüyen veri merkezi tüketimini temiz enerji alım anlaşmalarıyla (PPA) karşılama | Tüketim 43.8M MWh'a çıkarken **34 GW** PPA portföyüne ulaşıldı |
 | 🤝 **Değer Zinciri (Scope 3) Şartı** | **2030** | Scope 3 emisyonlarını %50'den fazla azaltma | Büyük tedarikçilere %100 karbonsuz elektrik kullanma zorunluluğu |
 
-### 💡 Stratejik Önlem & Aksiyon
-* **Karbon Uzaklaştırma:** Dünyanın en büyük kurumsal kalıcı CDR portföyü olan 21.9M+ mtCO2e sözleşmeye bağlanmıştır.
-* **Temiz Enerji Güvencesi:** 34 GW'ı aşan küresel PPA anlaşmasıyla veri merkezi temiz enerji arzı güvenceye alınmıştır."""
+### 💡 Temel İnisiyatifler
+* **21.9M+ mtCO2e Karbon Uzaklaştırma:** Kalıcı Direct Air Capture ve biyo-kütle dahil dünyanın en büyük kurumsal alım portföyü hayata geçirilmiştir.
+* **34 GW Temiz Enerji Portföyü:** Artan veri merkezi güç ihtiyacını karşılamak için küresel temiz enerji anlaşmaları rekor seviyeye ulaştırılmıştır."""
     else:
-        return """### 🎯 Direct Answer & 📌 Executive Summary
-> **Direct Answer:** Microsoft's corporate commitments across its 2024–2026 sustainability reports target **Carbon Negative by 2030**, **Historical Emissions Compensation by 2050** (covering all emissions since 1975), and matching datacenter operations with **100% Carbon-Free Electricity (CFE)** backed by a **34 GW** PPA portfolio against 43.8M MWh electricity consumption.
+        return """Microsoft's corporate commitments across its 2024–2026 sustainability reports focus on **Carbon Negative by 2030**, **Historical Emissions Compensation by 2050** (covering all cumulative emissions since 1975), and powering datacenter operations with **100% Carbon-Free Electricity (CFE)** backed by a **34 GW** clean energy PPA portfolio against 43.8M MWh electricity consumption.
 
-### 🎯 Corporate Carbon & Clean Energy Commitments Table
+### 📊 Corporate Carbon & Clean Energy Commitments Table
 
 | Strategic Commitment | Target Year | Scope & Mechanism | Verified Status (FY25) |
 | :--- | :---: | :--- | :--- |
@@ -646,10 +634,9 @@ def compute_carbon_commitments_summary(lang: str = "tr") -> str:
 
 def compute_carbon_removal_summary(lang: str = "tr") -> str:
     if lang == "tr":
-        return """### 🎯 Doğrudan Yanıt & 📌 Yönetici Özeti
-> **Net Cevap:** 2025 raporundaki Karbon Tablosu 3'e göre Microsoft'un sözleşmeye bağlanan toplam karbon uzaklaştırma hacmi **21,927,370 mtCO2e** olup, 2024 raporundaki 5,015,019 tona kıyasla **4.37 kat artış** göstermiştir. Portföyde en büyük paya sahip ilk iki teknoloji grubu sırasıyla **Orman/Doğa tabanlı (~8.54M mtCO2e, %38.9)** ve **Biyokütle/BECCS (~5.13M mtCO2e, %23.4)** çözümleridir.
+        return """Microsoft'un 2025 raporundaki Karbon Tablosu 3'e göre sözleşmeye bağlanan toplam karbon uzaklaştırma hacmi **21,927,370 mtCO2e** seviyesine ulaşmıştır. Bu hacim, 2024 raporundaki 5,015,019 tona kıyasla **4.37 kat artış** anlamına gelmektedir. Portföyde en büyük paya sahip ilk iki teknoloji grubu **Orman/Doğa tabanlı (~8.54M mtCO2e, %38.9)** ve **Biyokütle/BECCS (~5.13M mtCO2e, %23.4)** çözümleridir.
 
-### 🔬 Teknoloji Türlerine Göre Portföy Dağılım Tablosu (2025 Raporu, Tablo 3)
+### 🔬 Teknoloji Türlerine Göre Karbon Uzaklaştırma Portföyü (2025 Raporu, Tablo 3)
 
 | Teknoloji Grubu | Ana Metot & Proje Türü | Sözleşmeli Hacim (mtCO2e) | Portföy Payı | Kalıcılık / Dayanıklılık |
 | :--- | :--- | :---: | :---: | :---: |
@@ -660,18 +647,17 @@ def compute_carbon_removal_summary(lang: str = "tr") -> str:
 | 🌊 **Okyanus Tabanlı ve Diğer Teknolojiler** | Denizel alkalinite artırma & yeni teknolojiler | `1,700,000 mtCO2e` | **%7.8** | Yüksek Vade |
 | 🎯 **Toplam Sözleşmeli Karbon Uzaklaştırma** | **Tüm Teknoloji Grupları Kümülatif (FY25)** | **`21,927,370 mtCO2e`** | **%100.0** | **4.37 Kat Artış** |
 
-### ⏱️ Zaman Çizelgesi ve Teslimat Dağılımı
+### ⏱️ Teslimat Zaman Çizelgesi Dağılımı
 | Zaman Dilimi / Hedef Kapsamı | Hacim (mtCO2e) | Açıklama & Amaç |
 | :--- | :---: | :--- |
 | **Yıllık Nötrlük (In-Year Neutrality)** | `1,690,940 mtCO2e` | İlgili raporlama yılındaki emisyonların dengelenmesi |
 | **2030 Karbon Negatif Hedefi Kapsamı** | `2,804,056 mtCO2e` | 2030 net-negatif eşiğine doğrudan tahsis |
 | **2031 Sonrası ve Geçmiş Taahhütler** | `17,432,374 mtCO2e` | 2050 tarihsel telafi ve uzun vadeli teslimatlar |
 
-### 💡 Stratejik Önlem & Aksiyon
-* **Piyasa Katalizörü:** Direct Air Capture ve mineralizasyon gibi kalıcı çözümlere çok yıllı alım garantisi sağlanmaktadır."""
+### 💡 Stratejik Aksiyon
+* **Piyasa Katalizörü:** Kalıcı CDR teknolojilerinin ticarileşmesini hızlandırmak amacıyla Direct Air Capture ve mineralizasyon çözümlerine doğrudan sermaye ve çok yıllı alım taahhütleri verilmektedir."""
     else:
-        return """### 🎯 Direct Answer & 📌 Executive Summary
-> **Direct Answer:** According to Carbon Table 3 in the 2025 report, Microsoft contracted **21,927,370 mtCO2e** in carbon removal—a **4.37x growth** over 5,015,019 tons reported in 2024. The top two technology categories are **Nature-based (~8.54M mtCO2e, 38.9%)** and **Biomass/BECCS (~5.13M mtCO2e, 23.4%)**.
+        return """According to Carbon Table 3 in the 2025 report, Microsoft contracted **21,927,370 mtCO2e** in carbon removal—a **4.37x growth** over 5,015,019 tons reported in 2024. The top two technology categories are **Nature-based (~8.54M mtCO2e, 38.9%)** and **Biomass/BECCS (~5.13M mtCO2e, 23.4%)**.
 
 ### 🔬 Portfolio Breakdown by Technology Type (2025 Report, Table 3)
 
@@ -696,8 +682,7 @@ def compute_carbon_removal_summary(lang: str = "tr") -> str:
 
 def compute_zero_waste_summary(lang: str = "tr") -> str:
     if lang == "tr":
-        return """### 🎯 Doğrudan Yanıt & 📌 Yönetici Özeti
-> **Net Cevap:** 2024 ve 2026 raporları arasında UL 2799 Sıfır Atık sertifikalı veri merkezi sayısı **10'dan 14 tesise (+4 yeni tesis)** çıkmış, operasyonel olarak depolama alanlarından yönlendirilen atık miktarı 18,537 tondan **218,000 metrik tona (~11.8 kat)** yükselmiştir. Bulut donanımının **%89.4'ü** Microsoft Circular Centers ile yeniden kullanım zincirine kazandırılmıştır.
+        return """Microsoft'un 2024 ve 2026 raporları arasında UL 2799 Sıfır Atık sertifikalı veri merkezi sayısı **10'dan 14 tesise (+4 yeni tesis)** çıkmış, düzenli depolama ve yakma tesislerinden yönlendirilen operasyonel atık miktarı 18,537 tondan **218,000 metrik tona (~11.8 kat)** yükselmiştir. Bulut donanımlarının **%89.4'ü** Microsoft Circular Centers aracılığıyla yeniden kullanıma kazandırılmıştır.
 
 ### 📊 Sıfır Atık ve Döngüsellik İlerleme Tablosu (2024–2026 Raporları)
 
@@ -708,11 +693,10 @@ def compute_zero_waste_summary(lang: str = "tr") -> str:
 | 🖥️ **Bulut Donanımı Yeniden Kullanım** | Başlangıç Seviyesi | **%89.4** | **Yüksek Döngüsellik** | **Microsoft Circular Centers** |
 | 🎯 **Operasyonel Atık Yönlendirme Hedefi** | %85+ | **%90 ve üzeri** | **2030 Hedef Uyumlu** | Silver (%90-94), Gold (%95-99), Platinum (%100) |
 
-### 💡 Stratejik Önlem & Aksiyon
-* **Döngüsel Merkezler:** Kullanım ömrünü tamamlayan sunucu ve ağ donanımları Circular Centers bünyesinde test edilerek yeniden kullanılır."""
+### 💡 Temel İnisiyatifler
+* **Döngüsel Merkezler (Circular Centers):** Kullanım ömrünü tamamlayan sunucu ve ağ bileşenleri hurdaya çıkarılmayıp test edilerek yeniden kullanım zincirine dahil edilmektedir."""
     else:
-        return """### 🎯 Direct Answer & 📌 Executive Summary
-> **Direct Answer:** Between 2024 and 2026 reports, UL 2799 Zero Waste certified datacenters increased from **10 to 14 sites (+4 sites)**, operational waste diverted grew from 18,537 to **218,000 metric tons (~11.8x)**, and cloud hardware achieved an **89.4%** reuse/recycle rate via Circular Centers.
+        return """Between 2024 and 2026 reports, UL 2799 Zero Waste certified datacenters increased from **10 to 14 sites (+4 sites)**, operational waste diverted grew from 18,537 to **218,000 metric tons (~11.8x)**, and cloud hardware achieved an **89.4%** reuse/recycle rate via Circular Centers.
 
 ### 📊 Zero Waste & Circularity Progress Table (2024–2026 Reports)
 
@@ -728,8 +712,7 @@ def compute_zero_waste_summary(lang: str = "tr") -> str:
 
 def compute_packaging_summary(lang: str = "tr") -> str:
     if lang == "tr":
-        return """### 🎯 Doğrudan Yanıt & 📌 Yönetici Özeti
-> **Net Cevap:** 2026 Çevresel Sürdürülebilirlik Raporu'na göre Microsoft, birincil donanım ve cihaz ambalajlarındaki tek kullanımlık plastik kullanım oranını **%0.07** seviyesine indirerek sıfıra yakın eşiğe ulaştırmıştır (2025 raporundaki %4.2'den rekor düşüş). Süreçte kalıplanmış kağıt lifleri kullanılmış, UL Solutions denetimi ve UL 2799 standartları temel alınmıştır.
+        return """2026 Çevresel Sürdürülebilirlik Raporu'na göre Microsoft, birincil donanım ve cihaz ambalajlarındaki tek kullanımlık plastik oranını **%0.07** düzeyine indirerek sıfıra yakın eşiğe ulaştırmıştır. Şirket, Surface ve Xbox ambalajlarında plastik köpükleri kaldırarak kalıplanmış kağıt lifleri (molded fiber) ve FSC sertifikalı ambalajlara geçiş yapmıştır.
 
 ### 📦 3 Yıllık Ambalaj ve Plastik Azaltım İlerleme Tablosu
 
@@ -740,11 +723,10 @@ def compute_packaging_summary(lang: str = "tr") -> str:
 | 📅 **2026 Raporu (FY25/26)** | **%0.07** | **Sıfıra Yakın Eşik** | FSC sertifikalı kağıt, su bazlı yapıştırıcı | UL Solutions Denetimi |
 | 🎯 **2030 Kurumsal Hedef** | **%0.00** | **%100 Döngüsel** | %100 geri dönüştürülebilir döngüsel ambalaj | Küresel Sıfır Atık Taahhüdü |
 
-### 💡 Stratejik Önlem & Aksiyon
-* **Kalıplanmış Kağıt Lifi:** Plastik tamponlar yerine molded fiber ve su bazlı yapıştırıcı bantlar kullanılarak ambalajlar evsel kağıt geri dönüşümüne uyumlu kılınmıştır."""
+### 💡 Temel İnisiyatifler
+* **Molded Fiber Geçişi:** Plastik tamponlar yerine tamamen geri dönüştürülebilir kağıt hamuru ve su bazlı yapıştırıcı bantlar devreye alınmıştır."""
     else:
-        return """### 🎯 Direct Answer & 📌 Executive Summary
-> **Direct Answer:** According to the 2026 Environmental Sustainability Report, Microsoft achieved a single-use plastic packaging rate of **0.07%** in primary hardware and devices, declining from 4.2% in 2025 and approaching near-zero plastic design.
+        return """According to the 2026 Environmental Sustainability Report, Microsoft achieved a single-use plastic packaging rate of **0.07%** in primary hardware and devices, declining from 4.2% in 2025 and approaching near-zero plastic design.
 
 ### 📦 3-Year Packaging & Plastic Reduction Trajectory Table
 
@@ -760,8 +742,7 @@ def compute_packaging_summary(lang: str = "tr") -> str:
 
 def compute_water_summary(lang: str = "tr") -> str:
     if lang == "tr":
-        return """### 🎯 Doğrudan Yanıt & 📌 Yönetici Özeti
-> **Net Cevap:** 2026 raporu ve Su Tablosu 1 verilerine göre Microsoft'un kümülatif sözleşmeli su ikmal hacmi **125.0 milyon m³**'tür. FY25 yılında tamamlanan 7,800 milyon m³ yenileme hacmi ile 9,500M m³ hedef üzerinden gerçekleşme oranı **%82.1**'e yükselmiştir (FY24 %68.9'a göre +13.2 puan artış). Şebeke sızıntılarını yapay zekayla tespit etmek için FIDO Tech ile Londra, Querétaro ve Phoenix'te ortaklık yürütülmektedir.
+        return """Microsoft'un 2026 Çevresel Sürdürülebilirlik Raporu ve Su Tablosu 1 verilerine göre kümülatif sözleşmeli su ikmal hacmi **125.0 milyon m³** seviyesine ulaşmıştır. FY25 yılında tamamlanan 7,800 milyon m³ su yenileme hacmi ile 9,500M m³ hedef üzerinden gerçekleşme oranı **%82.1**'e yükselmiştir (FY24'teki %68.9 seviyesine kıyasla +13.2 puan artış).
 
 ### 💧 Su Yönetimi ve Hedef Gerçekleşme Metrik Tablosu (Su Tablosu 1)
 
@@ -778,12 +759,11 @@ def compute_water_summary(lang: str = "tr") -> str:
 | :--- | :--- | :--- | :--- |
 | 🛰️ **FIDO Tech** | AI Destekli Akustik Sensör Analizi | 🇬🇧 **Londra (İngiltere)**<br>🇲🇽 **Querétaro (Meksika)**<br>🇺🇸 **Phoenix (ABD)** | Belediye dağıtım şebekelerinde yeraltı su borusu sızıntılarını noktasal tespit ederek su kaybını önleme |
 
-### 💡 Stratejik Önlem & Aksiyon
-* **Akustik Kaçak AI:** FIDO Tech sensör yapay zekası ile şehir su şebekelerindeki kayıplar noktasal olarak tespit edilip önlenmektedir.
-* **Eko-Soğutma:** Veri merkezlerinde su tüketimini minimize eden adyabatik ve kapalı devre soğutmaya geçilmektedir."""
+### 💡 Temel İnisiyatifler
+* **Akustik Kaçak Tespiti AI:** FIDO Tech sensör yapay zekası belediye su şebekelerine entegre edilerek dağıtım kayıpları minimize edilmektedir.
+* **Adyabatik Soğutma:** Veri merkezlerinde tatlı su tüketimini azaltan eko-soğutma mimarileri kullanılmaktadır."""
     else:
-        return """### 🎯 Direct Answer & 📌 Executive Summary
-> **Direct Answer:** According to the 2026 report and Water Table 1, Microsoft's cumulative contracted water replenishment reached **125.0 million m³**, with replenishment achievement climbing to **82.1%** in FY25 (up +13.2 points from 68.9% in FY24). Microsoft deployed AI acoustic leak analysis in partnership with FIDO Tech across London, Querétaro, and Phoenix.
+        return """According to the 2026 report and Water Table 1, Microsoft's cumulative contracted water replenishment reached **125.0 million m³**, with replenishment achievement climbing to **82.1%** in FY25 (up +13.2 points from 68.9% in FY24). Microsoft deployed AI acoustic leak analysis in partnership with FIDO Tech across London, Querétaro, and Phoenix.
 
 ### 💧 Water Stewardship & Target Achievement Metrics Table (Water Table 1)
 
@@ -1393,19 +1373,33 @@ if current_theme_id == "dark":
     div[data-testid="stSegmentedControl"] button[aria-checked="true"] p, div[data-testid="stSegmentedControl"] button[aria-checked="true"] span {
         color: #0d1117 !important;
     }
-    /* Chat Input */
-    [data-testid="stBottom"], [data-testid="stBottom"] > div, [data-testid="stBottomBlockContainer"] {
+    /* Chat Input & Docked Bottom Bar */
+    [data-testid="stBottom"] {
         position: fixed !important;
         bottom: 0px !important;
         left: 0px !important;
         right: 0px !important;
-        z-index: 9999 !important;
-        background-color: #0d1117 !important;
+        width: 100vw !important;
+        z-index: 99999 !important;
+        background: linear-gradient(180deg, rgba(13, 17, 23, 0) 0%, rgba(13, 17, 23, 0.88) 30%, #0d1117 100%) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+        padding: 12px 1rem 22px 1rem !important;
         border: none !important;
-        padding: 10px 20px 20px 20px !important;
+        display: flex !important;
+        justify-content: center !important;
+    }
+    [data-testid="stBottomBlockContainer"] {
+        position: relative !important;
+        max-width: 820px !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
     }
     .main .block-container {
-        padding-bottom: 130px !important;
+        padding-bottom: 180px !important;
     }
     div[data-testid="stChatInput"],
     [data-testid="stChatInput"],
@@ -1711,22 +1705,32 @@ elif current_theme_id == "white":
     }
 
     /* 💬 Chat Input & Bottom Bar (Saf Beyaz & Yüksek Kontrastlı Net Siyah Metin) */
-    [data-testid="stBottom"],
-    [data-testid="stBottom"] > div,
-    [data-testid="stBottomBlockContainer"],
-    [data-testid="stChatInputContainer"] {
+    [data-testid="stBottom"] {
         position: fixed !important;
         bottom: 0px !important;
         left: 0px !important;
         right: 0px !important;
-        z-index: 9999 !important;
-        background-color: #ffffff !important;
-        background: #ffffff !important;
+        width: 100vw !important;
+        z-index: 99999 !important;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.92) 30%, #ffffff 100%) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+        padding: 12px 1rem 22px 1rem !important;
         border: none !important;
-        padding: 10px 20px 20px 20px !important;
+        display: flex !important;
+        justify-content: center !important;
+    }
+    [data-testid="stBottomBlockContainer"] {
+        position: relative !important;
+        max-width: 820px !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
     }
     .main .block-container {
-        padding-bottom: 130px !important;
+        padding-bottom: 180px !important;
     }
     [data-testid="stChatInput"],
     div[data-testid="stChatInput"],
@@ -2041,26 +2045,32 @@ elif current_theme_id == "blue":
     }
     
     /* 💬 Chat Input & Bottom Bar */
-    [data-testid="stBottom"],
-    [data-testid="stBottom"] > div,
-    [data-testid="stBottomBlockContainer"] {
+    [data-testid="stBottom"] {
         position: fixed !important;
         bottom: 0px !important;
         left: 0px !important;
         right: 0px !important;
-        z-index: 9999 !important;
-        background-color: #f8fafc !important;
+        width: 100vw !important;
+        z-index: 99999 !important;
+        background: linear-gradient(180deg, rgba(240, 246, 255, 0) 0%, rgba(240, 246, 255, 0.92) 30%, #f0f6ff 100%) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+        padding: 12px 1rem 22px 1rem !important;
         border: none !important;
-        padding: 10px 20px 20px 20px !important;
+        display: flex !important;
+        justify-content: center !important;
+    }
+    [data-testid="stBottomBlockContainer"] {
+        position: relative !important;
+        max-width: 820px !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
     }
     .main .block-container {
-        padding-bottom: 130px !important;
-    }
-    [data-testid="stChatInput"] {
-        background-color: #ffffff !important;
-        border: 2px solid #93c5fd !important;
-        border-radius: 14px !important;
-        box-shadow: 0 2px 8px rgba(0, 120, 212, 0.08) !important;
+        padding-bottom: 180px !important;
     }
 
     .stApp div[data-testid="stPills"] [aria-pressed="true"],
@@ -2104,11 +2114,7 @@ elif current_theme_id == "blue":
         border: none !important;
     }
 
-    /* 💬 Chat Input & Bottom Bar (Siyahlığı Tamamen Kaldırır) */
-    [data-testid="stBottom"],
-    [data-testid="stBottom"] > div,
-    [data-testid="stBottomBlockContainer"],
-    [data-testid="stChatInputContainer"],
+    /* 💬 Chat Input Box */
     [data-testid="stChatInput"],
     div[data-testid="stChatInput"],
     [data-testid="stChatInput"] > div,
@@ -2119,7 +2125,7 @@ elif current_theme_id == "blue":
         background: #ffffff !important;
         border: 2px solid #93c5fd !important;
         border-radius: 14px !important;
-        box-shadow: 0 2px 8px rgba(0, 120, 212, 0.08) !important;
+        box-shadow: 0 4px 16px rgba(0, 120, 212, 0.12) !important;
     }
     [data-testid="stChatInput"] textarea,
     [data-testid="stChatInput"] textarea * {
@@ -2417,8 +2423,6 @@ else:
         color: #2d050f !important;
         font-weight: 700 !important;
     }
-        color: inherit !important;
-    }
 
     /* 🎛️ Segmented Control (Dil Seçici - İç Dikdörtgensiz) */
     div[data-testid="stSegmentedControl"] > div,
@@ -2441,11 +2445,34 @@ else:
         font-weight: 700 !important;
         border: none !important;
     }
-    /* 💬 Chat Input & Bottom Bar (Siyahlığı Tamamen Kaldırır) */
-    [data-testid="stBottom"],
-    [data-testid="stBottom"] > div,
-    [data-testid="stBottomBlockContainer"],
-    [data-testid="stChatInputContainer"],
+    /* 💬 Chat Input & Docked Bottom Bar */
+    [data-testid="stBottom"] {
+        position: fixed !important;
+        bottom: 0px !important;
+        left: 0px !important;
+        right: 0px !important;
+        width: 100vw !important;
+        z-index: 99999 !important;
+        background: linear-gradient(180deg, rgba(255, 245, 247, 0) 0%, rgba(255, 245, 247, 0.92) 30%, #fff5f7 100%) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+        padding: 12px 1rem 22px 1rem !important;
+        border: none !important;
+        display: flex !important;
+        justify-content: center !important;
+    }
+    [data-testid="stBottomBlockContainer"] {
+        position: relative !important;
+        max-width: 820px !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+    }
+    .main .block-container {
+        padding-bottom: 180px !important;
+    }
     [data-testid="stChatInput"],
     div[data-testid="stChatInput"],
     [data-testid="stChatInput"] > div,
@@ -2456,7 +2483,7 @@ else:
         background: #ffffff !important;
         border: 2px solid #d99ca9 !important;
         border-radius: 14px !important;
-        box-shadow: 0 2px 8px rgba(184, 93, 117, 0.08) !important;
+        box-shadow: 0 4px 16px rgba(184, 93, 117, 0.12) !important;
     }
     [data-testid="stChatInput"] textarea,
     [data-testid="stChatInput"] textarea * {
@@ -2827,30 +2854,11 @@ with tab_chat:
     with messages_container:
         for idx, msg in enumerate(st.session_state.messages):
             with st.chat_message(msg["role"]):
-                if msg["role"] == "assistant":
-                    if "route" in msg:
-                        lat = msg.get("latency", 0.0)
-                        if msg["route"] == "pal":
-                            st.markdown(f":green-badge[{T['badge_pal']}] :gray-badge[⚡ {lat:.2f}s | 🎯 Doğrulanmış Deterministik Tablo]")
-                        else:
-                            st.markdown(f":blue-badge[{T['badge_rag']}] :gray-badge[⚡ {lat:.2f}s | 🎯 Çapraz Rapor Sentezi]")
-
                 st.markdown(msg["content"])
 
                 if "calc_details" in msg and msg["calc_details"]:
                     with st.expander(T["verified_output_label"], icon=":material/verified:"):
                         st.text(msg["calc_details"])
-                if "insight" in msg and msg["insight"]:
-                    ins = msg["insight"]
-                    with st.container(border=True):
-                        st.markdown(f"#### :material/eco: **{ins['title']}**")
-                        ci1, ci2 = st.columns([1, 2])
-                        with ci1:
-                            st.caption("ESG Sütunu & Hedef" if L == "tr" else "ESG Pillar & Target")
-                            st.markdown(f"**{ins['pillar']}**\n\n🎯 *{ins['target']}*")
-                        with ci2:
-                            st.caption("Microsoft Raporlanan Temel Aksiyonlar" if L == "tr" else "Reported Microsoft Key Actions")
-                            st.markdown(ins["actions"])
                 if "provenance" in msg and msg["provenance"]:
                     prov_title = T["provenance_label"].format(
                         count=len(msg["provenance"]),
@@ -3019,19 +3027,15 @@ with tab_chat:
                                 calc_details = "Doğrulanmış Python Matematik Sonuçları:\n" + "\n".join(calc_lines)
 
                                 synth_prompt = (
-                                    f"Doğrulanmış Kesin Matematik Verileri (Python ALU tarafından hesaplanmıştır):\n{calc_details}\n\n"
+                                    f"Doğrulanmış Kesin Matematik Verileri (Python ALU):\n{calc_details}\n\n"
                                     f"Soru: {query_to_run}\n\n"
-                                    f"Lütfen yanıtını her soru için standartlaştırılmış şu 3 bölümde sun:\n"
-                                    f"### 🎯 Doğrudan Yanıt\n> **Net Cevap:** Hesaplanmış kesin sonucu (farkı, toplamı veya oranı) İLK CÜMLEDE açıkça belirt.\n\n"
-                                    f"### 📊 Doğrulanmış Hesaplama & Değer Dağılım Tablosu\nİlgili tüm ara değişkenleri, girdileri ve sonuçları temiz bir Markdown tablosunda listele.\n\n"
-                                    f"### 💡 Stratejik Önlem & Rapor Özeti\n1-2 kısa maddede kurumsal bağlamı ve sonucu özetle. Gereksiz detaylardan kaçın."
+                                    "Yapay başlıklar (Doğrudan Yanıt: vb.) KULLANMADAN hesaplanmış kesin sonucu İLK CÜMLEDE doğrudan ve akıcı bir şekilde açıkla. "
+                                    "Ardından verileri ve hesaplamayı temiz bir Markdown tablosu ile sun ve 1-2 kısa stratejik madde ekle."
                                     if target_lang == "tr" else
-                                    f"Verified Exact Mathematical Results (Calculated via Python ALU):\n{calc_details}\n\n"
+                                    f"Verified Exact Mathematical Results (Python ALU):\n{calc_details}\n\n"
                                     f"Question: {query_to_run}\n\n"
-                                    f"Please structure your response into these 3 standardized sections:\n"
-                                    f"### 🎯 Direct Answer\n> **Direct Answer:** State the exact calculated result upfront in the very first sentence.\n\n"
-                                    f"### 📊 Verified Computation & Metrics Table\nPresent all inputs and final outputs in a clean Markdown table.\n\n"
-                                    f"### 💡 Strategic Context\n1-2 concise bullet points on corporate context. Avoid unnecessary filler."
+                                    "DO NOT use artificial headers (like 'Direct Answer:'). State the exact calculated result directly in the first sentence. "
+                                    "Then format the metrics into a clear Markdown table and conclude with 1-2 concise bullet points."
                                 )
                                 stream_gen = query_foundry_stream(f_prompt, synth_prompt)
                             else:
@@ -3066,103 +3070,40 @@ with tab_chat:
                                 print("  -> Benzerlik Eşiği Altında: Kayıt Bulunamadı", flush=True)
                                 stream_gen = stream_static_text(not_found_msg)
                             else:
-                                print("  [3/3] Yerel Phi-4-mini Sentez Yanıtı Üretiyor...", flush=True)
+                                print("  [3/3] Yerel Phi-4-mini Tek Geçişli Akış Sentezi Başlatılıyor...", flush=True)
                                 context_chunks = [c["content"] for c in chunks]
+                                context_str = "\n\n".join(context_chunks)
+                                show_live_status(status_placeholder, "Rapor verileri analiz ediliyor ve yanıt akıtılıyor" if target_lang == "tr" else "Analyzing report context and streaming answer")
 
-                                # Deterministik Pydantic Extraction & Verification katmanı
-                                pydantic_matched = False
-                                verified_metrics_str = ""
-                                try:
-                                    extract_prompt = format_extraction_prompt(query_to_run, context_chunks)
-                                    raw_json = query_foundry(EXTRACTION_SYSTEM_PROMPT, extract_prompt, temperature=0.0, max_tokens=768)
-                                    match = re.search(r"\{.*\}", raw_json, re.DOTALL)
-                                    if match:
-                                        plan = QueryExtractionPlan(**json.loads(match.group(0)))
-                                        resolution = DeterministicResolver.validate_and_filter(plan, query_to_run)
-                                        if resolution.get("status") == "MATCH" and resolution.get("metrics"):
-                                            pydantic_matched = True
-                                            verified_metrics_str = "\n".join([
-                                                f"- Entity: {m.entity}, Type: {m.metric_type}, "
-                                                f"Value: {m.string_value if m.string_value else f'{m.value:,.0f} {m.unit}'}, "
-                                                f"Scope: {m.temporal_scope}, Cumulative: {m.is_cumulative}"
-                                                for m in resolution["metrics"]
-                                            ])
-                                            calc_details = verified_metrics_str
-                                except Exception as e:
-                                    print(f"  -> Pydantic Çıkarım/Eşleme Atlandı: {e}", flush=True)
-
-                                if pydantic_matched:
-                                    if target_lang == "tr":
-                                        s_system = get_factual_synthesis_prompt("tr")
-                                        synthesis_prompt = (
-                                            f"Doğrulanmış Rapor Metrikleri:\n{verified_metrics_str}\n\n"
-                                            f"Soru: {query_to_run}\n\n"
-                                            f"Lütfen şu standart 3 bölümde yanıt ver:\n"
-                                            f"### 🎯 Doğrudan Yanıt\n> **Net Cevap:** [Sorunun kesin cevabını İLK CÜMLEDE açıkça ver]\n\n"
-                                            f"### 📊 Doğrulanmış Rapor Tablosu & Veri Detayı\n[Markdown tablosu]\n\n"
-                                            f"### 💡 Stratejik Aksiyon & Kaynak\n[1-2 kısa madde]"
-                                        )
-                                    else:
-                                        s_system = get_factual_synthesis_prompt("en")
-                                        synthesis_prompt = (
-                                            f"Verified Report Metrics:\n{verified_metrics_str}\n\n"
-                                            f"Question: {query_to_run}\n\n"
-                                            f"Format in standardized sections:\n"
-                                            f"### 🎯 Direct Answer\n> **Direct Answer:** [Direct answer upfront]\n\n"
-                                            f"### 📊 Verified Metrics Table\n[Markdown table]\n\n"
-                                            f"### 💡 Strategic Action\n[1-2 concise bullets]"
-                                        )
-                                    stream_gen = query_foundry_stream(s_system, synthesis_prompt)
+                                if target_lang == "tr":
+                                    rag_system = (
+                                        "Sen Microsoft'un resmi Çevresel Sürdürülebilirlik Raporları (2024, 2025, 2026) konusunda uzmanlaşmış kıdemli bir kurumsal analistsin. "
+                                        "Kullanıcının sorusunu doğrudan, akıcı ve profesyonel bir yapay zeka asistanı (ChatGPT / Gemini) üslubuyla yanıtla.\n\n"
+                                        "Temel Kurallar:\n"
+                                        "1. 'Doğrudan Yanıt:', 'Yönetici Özeti:', 'Uyum Özeti' gibi yapay başlıklar KULLANMA. Cevabına ilk cümlede doğrudan ve net bir şekilde başla.\n"
+                                        "2. Soru yıllar arası değişim, oranlar veya birden fazla metrik içeriyorsa verileri MUTLAKA temiz bir Markdown tablosu ile sun.\n"
+                                        "3. Raporlanan stratejiler veya somut aksiyonlar için net madde işaretleri (bullet points) kullan.\n"
+                                        "4. Yalnızca verilen bağlamdaki resmi sayıları, birimleri ve verileri kullan. Asla uydurma veri üretme.\n"
+                                        "5. Gereksiz giriş cümlelerinden ve laf kalabalığından kaçın."
+                                    )
+                                    user_prompt = f"Microsoft Sürdürülebilirlik Raporu Bağlamı:\n{context_str}\n\nSoru: {query_to_run}\n\nYanıt:"
                                 else:
-                                    context_str = "\n\n".join(context_chunks)
-                                    if target_lang == "tr":
-                                        show_live_status(status_placeholder, "Rapor verileri analiz ediliyor ve Türkçe yönetici özeti sentezleniyor")
-                                        en_q = search_query if search_query != query_to_run else query_to_run
-                                        factual_en = query_foundry(
-                                            "You are a Senior Sustainability Analyst. Based ONLY on the provided Microsoft context, compose a concise, high-density factual summary (2-3 sentences) with exact numbers, units, and initiatives. Retain all names and metrics without redundancy. If information is not in context, output 'NOT_FOUND'.",
-                                            f"Context:\n{context_str}\n\nQuestion: {en_q}\n\nFactual Summary:",
-                                            temperature=0.1
-                                        )
-                                        if "NOT_FOUND" in factual_en and len(factual_en.strip()) < 25:
-                                            stream_gen = stream_static_text(not_found_msg)
-                                        else:
-                                            summary_system = (
-                                                "Sen uzman bir Kurumsal Sürdürülebilirlik Danışmanısın. Cevabını her soru için istisnasız şu 3 standart bölümde sun:\n"
-                                                "1. '### 🎯 Doğrudan Yanıt': Sorunun geçerli, net ve kesin cevabını İLK OLARAK 1-2 cümlede açıkça ver. Aranan sayı, oran, proje veya kurum adını en başta belirt.\n"
-                                                "2. '### 📊 Doğrulanmış Rapor Tablosu & Veri Detayı': Raporlanan metrikleri, göstergeleri veya bölgesel projeleri temiz bir Markdown Tablosu (`| Gösterge / Proje | Değer / Durum | Detay / Kapsam |`) halinde listele.\n"
-                                                "3. '### 💡 Stratejik Aksiyon & Kaynak': Microsoft'un raporda açıkladığı temel aksiyonu 1-2 kısa maddede özetle.\n"
-                                                "Gereksiz giriş lakırdılarından, soruyu baştan tekrar etmekten ve laf kalabalığından kesinlikle kaçın. Sayıları ve birimleri tam koru."
-                                            )
-                                            user_prompt_formatted = (
-                                                f"Soru: {query_to_run}\n\nDoğrulanmış Rapor Bulguları:\n{factual_en}\n\nStandardize Edilmiş Türkçe Yanıt:"
-                                            )
-                                            stream_gen = query_foundry_stream(
-                                                summary_system,
-                                                user_prompt_formatted
-                                            )
-                                    else:
-                                        summary_system = (
-                                            "You are a Senior Sustainability Advisor. Structure your answer using this standardized 3-part format:\n"
-                                            "1. '### 🎯 Direct Answer': State the exact, valid answer immediately in the first 1-2 sentences. Highlight numbers, names, or percentages upfront.\n"
-                                            "2. '### 📊 Verified Metrics & Report Findings Table': Present findings or comparisons in a clean, concise Markdown table.\n"
-                                            "3. '### 💡 Strategic Action & Source Reference': Summarize Microsoft's core corporate action in 1-2 concise bullet points.\n"
-                                            "Avoid introductory filler, question restatements, or preamble. Retain exact metrics and units without alteration."
-                                        )
-                                        user_prompt_formatted = (
-                                            f"Context:\n{context_str}\n\nQuestion: {query_to_run}\n\nStandardized Executive Answer:"
-                                        )
-                                        stream_gen = query_foundry_stream(
-                                            summary_system,
-                                            user_prompt_formatted
-                                        )
+                                    rag_system = (
+                                        "You are a Senior Sustainability Analyst specializing in Microsoft's official Environmental Sustainability Reports (2024, 2025, 2026). "
+                                        "Answer the user's inquiry directly, fluently, and authoritatively in the natural style of modern AI assistants (like ChatGPT or Gemini).\n\n"
+                                        "Core Guidelines:\n"
+                                        "1. DO NOT use artificial headers like 'Direct Answer:' or 'Executive Summary:'. Start your response immediately with the answer in the first sentence.\n"
+                                        "2. When questions involve multi-year trends, comparisons, or metric breakdowns, present them in a clean, concise Markdown table.\n"
+                                        "3. For strategic initiatives, milestones, or actions, use clear and readable bullet points.\n"
+                                        "4. Rely strictly on the official facts, metrics, and units provided in the context without hallucinating numbers.\n"
+                                        "5. Avoid introductory filler or question restatements."
+                                    )
+                                    user_prompt = f"Microsoft Sustainability Report Context:\n{context_str}\n\nQuestion: {query_to_run}\n\nAnswer:"
 
-                    # Bekleme belirtecini temizle, rozeti yerleştir ve akışı başlat
+                                stream_gen = query_foundry_stream(rag_system, user_prompt, temperature=0.1)
+
+                    # Bekleme belirtecini temizle ve akışı başlat
                     status_placeholder.empty()
-
-                    if route_type == "pal":
-                        badge_placeholder.markdown(f":green-badge[{T['badge_pal']}]")
-                    else:
-                        badge_placeholder.markdown(f":blue-badge[{T['badge_rag']}]")
 
                     # ⚡ Canlı Akışlı Yanıt Yazımı (Streaming Output)
                     ans = st.write_stream(stream_gen)
@@ -3170,19 +3111,7 @@ with tab_chat:
                     latency = time.time() - start_time
                     print(f"  [OK] Yanıt Başarıyla Tamamlandı (Gecikme: {latency:.2f}s)\n", flush=True)
 
-                    # 🌟 Sürdürülebilirlik Uyum & Aksiyon Kartı (ESG Insight)
-                    insight = get_esg_impact_insight(query_to_run, ans, target_lang)
-                    if insight:
-                        with st.container(border=True):
-                            st.markdown(f"#### :material/eco: **{insight['title']}**")
-                            ci1, ci2 = st.columns([1, 2])
-                            with ci1:
-                                st.caption("ESG Sütunu & Hedef" if target_lang == "tr" else "ESG Pillar & Target")
-                                st.markdown(f"**{insight['pillar']}**\n\n🎯 *{insight['target']}*")
-                            with ci2:
-                                st.caption("Microsoft Raporlanan Temel Aksiyonlar" if target_lang == "tr" else "Reported Microsoft Key Actions")
-                                st.markdown(insight["actions"])
-
+                    insight = None
                     if calc_details:
                         with st.expander(T["verified_output_label"], icon=":material/verified:"):
                             st.text(calc_details)

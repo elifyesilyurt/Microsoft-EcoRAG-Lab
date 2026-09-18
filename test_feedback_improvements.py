@@ -95,9 +95,9 @@ class TestFeedbackImprovements(unittest.TestCase):
     def test_04_humanized_compute_summaries(self):
         """4. Humanize edilmiş PAL özetlerinin biçim ve sayısal kesinlik kontrolü."""
         c_trend = compute_carbon_trend_summary("tr")
-        self.assertIn("📌 Yönetici Özeti", c_trend)
-        self.assertIn("📊 Doğrulanmış Emisyon Değişimi", c_trend)
-        self.assertIn("💡 Stratejik Önlem & Aksiyon", c_trend)
+        self.assertIn("📊 Sera Gazı Emisyon Karşılaştırması", c_trend)
+        self.assertIn("💡 Temel Stratejik Aksiyonlar", c_trend)
+        self.assertIn("21,121,000", c_trend)
         self.assertIn("170,887", c_trend)  # FY25 Scope 1
         self.assertIn("2,707,428", c_trend) # FY25 Scope 2 market
 
