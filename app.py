@@ -432,19 +432,27 @@ def query_foundry_stream(system_prompt: str, user_prompt: str, temperature: floa
                                     delta = chunk["choices"][0]["delta"].get("content", "")
                                     if delta:
                                         accumulated_text += delta
-                                        # Punctuation-normalized n-gram repetition detector (sonsuz döngü ve n-gram kilitlenmesi engelleme)
-                                        clean_words = re.sub(r'[^\w\s]', ' ', accumulated_text.lower()).split()
-                                        total_w = len(clean_words)
+                                        # Çift katmanlı tekrar algılayıcı: n-gram + alt-dize
                                         is_loop = False
-                                        for n in range(3, 25):
-                                            if total_w >= 2 * n:
-                                                if clean_words[-n:] == clean_words[-2*n:-n]:
-                                                    is_loop = True
-                                                    break
-                                                elif total_w >= 3 * n and clean_words[-n:] == clean_words[-3*n:-2*n]:
-                                                    is_loop = True
-                                                    break
+                                        # A. Alt-dize tekrarı (fuzzy loop yakalayıcı)
+                                        if len(accumulated_text) > 120:
+                                            tail = accumulated_text[-60:].lower().strip()
+                                            if tail and tail in accumulated_text[:-60].lower():
+                                                is_loop = True
+                                        # B. Tam n-gram tekrarı
+                                        if not is_loop:
+                                            clean_words = re.sub(r'[^\w\s]', ' ', accumulated_text.lower()).split()
+                                            total_w = len(clean_words)
+                                            for n in range(3, 25):
+                                                if total_w >= 2 * n:
+                                                    if clean_words[-n:] == clean_words[-2*n:-n]:
+                                                        is_loop = True
+                                                        break
+                                                    elif total_w >= 3 * n and clean_words[-n:] == clean_words[-3*n:-2*n]:
+                                                        is_loop = True
+                                                        break
                                         if is_loop:
+                                            print(f"  [LOOP] Tekrar algılandı, akış durduruldu ({len(accumulated_text)} karakter)", flush=True)
                                             break
                                         yield delta
                                 except Exception:
@@ -3112,42 +3120,42 @@ with tab_chat:
                                 stream_gen = stream_static_text(not_found_msg)
                             else:
                                 print("  [3/3] Yerel Phi-4-mini Tek Geçişli Akış Sentezi Başlatılıyor...", flush=True)
-                                context_chunks = [c["content"] for c in chunks]
-                                context_str = "\n\n".join(context_chunks)
-                                show_live_status(status_placeholder, "Rapor verileri analiz ediliyor ve yanıt akıtılıyor" if target_lang == "tr" else "Analyzing report context and streaming answer")
+                                # Bağlam boyutu kontrolü: Her chunk'ı 500 karakterle sınırla (phi-4-mini context overflow önleme)
+                                context_chunks = [c["content"][:500] for c in chunks]
+                                context_str = "\n---\n".join(context_chunks)
+                                show_live_status(status_placeholder, "✍️ Yanıt oluşturuluyor..." if target_lang == "tr" else "✍️ Generating response...")
 
                                 if target_lang == "tr":
                                     rag_system = (
-                                        "Sen Microsoft'un resmi Çevresel Sürdürülebilirlik Raporları (2024, 2025, 2026) konusunda uzmanlaşmış kıdemli bir kurumsal analistsin. "
-                                        "Kullanıcının sorusunu doğrudan, akıcı ve profesyonel bir yapay zeka asistanı (ChatGPT / Gemini) üslubuyla yanıtla.\n\n"
-                                        "Temel Kurallar:\n"
-                                        "1. 'Doğrudan Yanıt:', 'Yönetici Özeti:', 'Uyum Özeti' gibi yapay başlıklar KULLANMA. Cevabına ilk cümlede doğrudan ve net bir şekilde başla.\n"
-                                        "2. Soru yıllar arası değişim, oranlar veya birden fazla metrik içeriyorsa verileri MUTLAKA temiz bir Markdown tablosu ile sun.\n"
-                                        "3. Raporlanan stratejiler veya somut aksiyonlar için net madde işaretleri (bullet points) kullan.\n"
-                                        "4. Yalnızca verilen bağlamdaki resmi sayıları, birimleri ve verileri kullan. Asla uydurma veri üretme.\n"
-                                        "5. Gereksiz giriş cümlelerinden ve laf kalabalığından kaçın."
+                                        "Sen Microsoft Sürdürülebilirlik Raporları uzmanısın. Soruyu doğrudan ve akıcı yanıtla. "
+                                        "Şablon başlık kullanma, cevaba hemen başla. Karşılaştırmalı veriler için tablo, aksiyonlar için madde kullan. "
+                                        "Yalnızca bağlamdaki verileri kullan, uydurma."
                                     )
-                                    user_prompt = f"Microsoft Sürdürülebilirlik Raporu Bağlamı:\n{context_str}\n\nSoru: {query_to_run}\n\nYanıt:"
+                                    user_prompt = f"Bağlam:\n{context_str}\n\nSoru: {query_to_run}"
                                 else:
                                     rag_system = (
-                                        "You are a Senior Sustainability Analyst specializing in Microsoft's official Environmental Sustainability Reports (2024, 2025, 2026). "
-                                        "Answer the user's inquiry directly, fluently, and authoritatively in the natural style of modern AI assistants (like ChatGPT or Gemini).\n\n"
-                                        "Core Guidelines:\n"
-                                        "1. DO NOT use artificial headers like 'Direct Answer:' or 'Executive Summary:'. Start your response immediately with the answer in the first sentence.\n"
-                                        "2. When questions involve multi-year trends, comparisons, or metric breakdowns, present them in a clean, concise Markdown table.\n"
-                                        "3. For strategic initiatives, milestones, or actions, use clear and readable bullet points.\n"
-                                        "4. Rely strictly on the official facts, metrics, and units provided in the context without hallucinating numbers.\n"
-                                        "5. Avoid introductory filler or question restatements."
+                                        "You are a Microsoft Sustainability Report expert. Answer directly and fluently. "
+                                        "No template headers, start with the answer. Use tables for comparisons, bullets for actions. "
+                                        "Use only facts from the context, never fabricate."
                                     )
-                                    user_prompt = f"Microsoft Sustainability Report Context:\n{context_str}\n\nQuestion: {query_to_run}\n\nAnswer:"
+                                    user_prompt = f"Context:\n{context_str}\n\nQuestion: {query_to_run}"
 
                                 stream_gen = query_foundry_stream(rag_system, user_prompt, temperature=0.1)
 
-                    # Bekleme belirtecini temizle ve akışı başlat
-                    status_placeholder.empty()
+                    # Akışı başlat — status mesajı ilk token gelene kadar görünür kalır
+                    def _stream_with_live_status(gen, placeholder):
+                        """İlk token gelene kadar status mesajını görünür tutar, sonra temizler."""
+                        first_token = True
+                        for token in gen:
+                            if first_token:
+                                placeholder.empty()
+                                first_token = False
+                            yield token
+                        if first_token:
+                            placeholder.empty()
 
                     # ⚡ Canlı Akışlı Yanıt Yazımı (Streaming Output)
-                    ans = st.write_stream(stream_gen)
+                    ans = st.write_stream(_stream_with_live_status(stream_gen, status_placeholder))
 
                     latency = time.time() - start_time
                     print(f"  [OK] Yanıt Başarıyla Tamamlandı (Gecikme: {latency:.2f}s)\n", flush=True)
