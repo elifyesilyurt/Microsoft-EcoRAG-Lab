@@ -42,7 +42,7 @@ Otomatik dil algılamalı (TR/EN) gerçek zamanlı token akışı, deterministik
 
 <div align="center">
 
-| Türkçe Asistan & 2026 PAL Çıkarımı (Fluent Azure Teması) | İngilizce Asistan & PAL Hesaplama (Toz Pembe Teması) |
+| Türkçe Asistan & 2026 PAL Çıkarımı (Okyanus Mavisi Teması) | İngilizce Asistan & PAL Hesaplama (Toz Pembe Teması) |
 |---|---|
 | ![Türkçe Asistan ve PAL Çıkarımı](images/chat_response_pal_tr.png) | ![İngilizce Asistan ve PAL Hesaplama](images/chat_response_pal.png) |
 

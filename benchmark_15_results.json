@@ -1,0 +1,254 @@
+[
+  {
+    "id": 1,
+    "tier": "🟢 SEVİYE 1: KOLAY",
+    "title": "Tek Kullanımlık Plastik Oranı",
+    "question": "2026 Microsoft Çevresel Sürdürülebilirlik Raporuna göre, 2025/2026 takvim yılı sonunda birincil cihaz ambalajlarında ulaşılan tek kullanımlık plastik oranı yüzde kaçtır?",
+    "expected": "%0.07 (veya 0.07%)",
+    "route": "pal_packaging",
+    "latency_sec": 0.0,
+    "passed": true,
+    "matched_terms": [
+      "0.07",
+      "%0.07"
+    ],
+    "answer": "### 📌 Yönetici Özeti (Ambalaj ve Plastik Azaltımı)\n> 2026 Çevresel Sürdürülebilirlik Raporu'na göre Microsoft, birincil donanım ve cihaz ambalajlarındaki tek kullanımlık plastik kullanımını rekor seviyede **%0.07** düzeyine indirerek sıfıra yakın eşiğe ulaştırmıştır.\n\n### 📦 3 Yıllık Ambalaj ve Plastik Azaltım İlerleme Tablosu\n\n| Rapor Dönemi & Yıl | Birincil Ambalaj Plastik Oranı | Değişim & Eğilim | Kullanılan Malzeme & Çözüm | Denetim Standardı |\n| :--- | :---: | :---: | :--- | :--- |\n| 📅 **2024 Raporu (FY23)** | Başlangıç Seviyesi | Reform Başlatıldı | Plastik bant ve köpüklerin azaltılması | TRUE Zero Waste |\n| 📅 **2025 Raporu (FY24)** | **%4.2** | Hızlı Düşüş Eşiği | Kalıplanmış kağıt lifi ve hamuru geçişi | UL 2799 ECVP Prosedürü |\n| 📅 **2026 Raporu (FY25/26)** | **%0.07** | **Sıfıra Yakın Eşik** | FSC sertifikalı kağıt, su bazlı yapıştırıcı | UL Solutions Denetimi |\n| 🎯 **2030 Kurumsal Hedef** | **%0.00** | **%100 Döngüsel** | %100 geri dönüştürülebilir döngüsel ambalaj | Küresel Sıfır Atık Taahhüdü |\n\n### 💡 Stratejik Önlem & Aksiyon\nCihaz ambalajlarında plastik tampon yerine kalıplanmış kağıt lifleri (molded fiber) ve su bazlı yapıştırıcı bantlar kullanılarak ambalajların doğrudan evsel kağıt geri dönüşümüne kazandırılması sağlanmıştır."
+  },
+  {
+    "id": 2,
+    "tier": "🟢 SEVİYE 1: KOLAY",
+    "title": "Kümülatif Su Yenileme Hacmi",
+    "question": "Microsoft'un 2026 sürdürülebilirlik raporunda açıklanan kümülatif sözleşmeli su ikmal (replenishment) hacmi kaç milyon metreküptür?",
+    "expected": "125.0 milyon m³",
+    "route": "pal_water",
+    "latency_sec": 0.0,
+    "passed": true,
+    "matched_terms": [
+      "125",
+      "125.0",
+      "milyon m"
+    ],
+    "answer": "### 📌 Yönetici Özeti (Su Yönetimi & Su Pozitifliği)\n> Microsoft, 2030 yılına kadar **\"Su Pozitif\" (Water Positive)** olma hedefi kapsamında doğrudan operasyonlarında tükettiği su miktarından daha fazlasını yerel havzalara geri kazandırmaktadır. FY25 itibarıyla kümülatif sözleşmeli su ikmal hacmi **125.0 milyon m³** seviyesine, yenileme hedef gerçekleştirme oranı ise **%82.1**'e yükselmiştir.\n\n### 💧 Su Yönetimi ve Hedef Gerçekleşme Metrik Tablosu (Su Tablosu 1)\n\n| Su Göstergesi & Metrik | Raporlanan Değer | Hedef / Referans | İlerleme Durumu | Detay & Kapsam |\n| :--- | :---: | :---: | :---: | :--- |\n| 🌊 **Kümülatif Sözleşmeli Su İkmal Hacmi** | **`125.0 milyon m³`** | FY25 İtibarıyla | Sürekli Büyüme | Risk altındaki küresel su havzaları |\n| 📅 **FY25 Yıllık Sözleşmeli Su Faydası** | **`35.0 milyon m³`** | FY25 Yıllık | Yıllık Katkı | Havza restorasyonu ve sulak alan projeleri |\n| 🎯 **Tamamlanan Su Yenileme Hacmi** | **`7,800 milyon m³`** | 9,500M m³ Hedef | Gerçekleşme: **%82.1** | FY24 (%68.9) seviyesine göre **+13.2 puan** iyileşme |\n| 🚰 **Yıllık Toplam Su Çekimi** | `10,210M m³` | FY20: 4,830M m³ | Büyüyen Hacim | Veri merkezi eko-soğutma ve operasyonel kullanım |\n\n### 🤖 Yapay Zeka ile Akustik Kaçak Tespiti Projesi (FIDO Tech)\n\n| Ortak Girişim | Uygulanan Teknoloji | Pilot Şehirler & Lokasyonlar | Sağlanan Fayda |\n| :--- | :--- | :--- | :--- |\n| 🛰️ **FIDO Tech** | AI Destekli Akustik Sensör Analizi | 🇬🇧 **Londra (İngiltere)**<br>🇲🇽 **Querétaro (Meksika)**<br>🇺🇸 **Phoenix (ABD)** | Belediye dağıtım şebekelerinde yeraltı su borusu sızıntılarını noktasal tespit ederek su kaybını önleme |\n\n### 💡 Stratejik Önlem & Aksiyon\nVeri merkezlerinde adyabatik ve kapalı devre soğutma sistemleri devreye alınırken, şebeke kayıplarını minimize etmek için FIDO Tech akustik kaçak tespit yapay zekası belediye su ağlarına entegre edilmiştir."
+  },
+  {
+    "id": 3,
+    "tier": "🟢 SEVİYE 1: KOLAY",
+    "title": "Bulut Donanımı Yeniden Kullanım Oranı",
+    "question": "Microsoft Circular Centers (Döngüsel Merkezler) aracılığıyla kullanım ömrü biten sunucu ve ağ donanımlarının yüzde kaçı yeniden kullanım veya geri dönüşüme kazandırılmıştır?",
+    "expected": "%89.4 (veya %89)",
+    "route": "pal_zero_waste",
+    "latency_sec": 0.0,
+    "passed": true,
+    "matched_terms": [
+      "89.4",
+      "%89",
+      "89"
+    ],
+    "answer": "### 📌 Yönetici Özeti (Sıfır Atık & Döngüsel Veri Merkezleri)\n> Microsoft, 2030 Sıfır Atık vizyonu kapsamında operasyonel atıkların en az **%90'ını** düzenli depolama ve yakma fırınlarından kurtarmayı taahhüt etmiştir. Sertifikalı veri merkezlerinin sayısı 10'dan 14'e çıkarılırken, Circular Centers aracılığıyla bulut donanımının **%89.4'ü** yeniden kullanıma kazandırılmıştır.\n\n### 📊 Sıfır Atık ve Döngüsellik İlerleme Tablosu (2024–2026 Raporları)\n\n| Performans Göstergesi | Önceki Durum (FY23) | Son Durum (FY25/2026) | Net Gelişim & Değişim | Kullanılan Standart & Çerçeve |\n| :--- | :---: | :---: | :---: | :--- |\n| 🏢 **Sertifikalı Veri Merkezi Sayısı** | 10 Veri Merkezi | **14 Tesis** | **+4 Yeni Tesis Artışı** | **UL 2799 ECVP** (Underwriters Laboratories) |\n| ♻️ **Yönlendirilen Operasyonel Atık** | `18,537 metrik ton` | **`218,000 metrik ton`** | **~11.8 Kat Artış** | TRUE Zero Waste & UL Çerçevesi |\n| 🖥️ **Bulut Donanımı Yeniden Kullanım** | Başlangıç Seviyesi | **%89.4** | **Yüksek Döngüsellik** | **Microsoft Circular Centers** |\n| 🎯 **Operasyonel Atık Yönlendirme Hedefi** | %85+ | **%90 ve üzeri** | **2030 Hedef Uyumlu** | Silver (%90-94), Gold (%95-99), Platinum (%100) |\n\n### 💡 Stratejik Önlem & Aksiyon\nMicrosoft Circular Centers (Döngüsel Merkezler), kullanım ömrünü tamamlayan sunucu ve ağ donanımlarını hurdaya göndermek yerine bileşen bazında test edip yeniden kullanım zincirine kazandırmaktadır."
+  },
+  {
+    "id": 4,
+    "tier": "🟢 SEVİYE 1: KOLAY",
+    "title": "2030 Karbon Taahhüdü",
+    "question": "Microsoft'un 2030 ve 2050 yılları için belirlediği kurumsal karbon hedefleri nelerdir?",
+    "expected": "2030'a kadar Karbon Negatif, 2050'ye kadar tüm tarihsel emisyonları telafi etme",
+    "route": "pal_carbon_commitments",
+    "latency_sec": 0.0,
+    "passed": true,
+    "matched_terms": [
+      "2030",
+      "karbon negatif",
+      "2050",
+      "tarihsel"
+    ],
+    "answer": "### 📌 Yönetici Özeti (2030 & 2050 Kurumsal Karbon Taahhütleri)\n> Microsoft, iklim kriziyle mücadelede teknoloji sektörünün en kapsamlı taahhütlerini açıklamıştır: **2030 Karbon Negatif**, **2050 Tarihsel Emisyon Telafisi** ve **%100 Karbonsuz Elektrik (CFE)**.\n\n### 🎯 Kurumsal Karbon ve Temiz Enerji Taahhütleri Tablosu (2024–2026 Raporları)\n\n| Taahhüt & Stratejik Hedef | Hedef Yılı | Kapsam & Detaylar | Doğrulanmış Durum (FY25) |\n| :--- | :---: | :--- | :--- |\n| 🌱 **Karbon Negatif (Carbon Negative)** | **2030** | Scope 1, 2 ve 3 emisyonlarının tamamından daha fazlasını atmosferden kalıcı olarak uzaklaştırma | 21.9M+ mtCO2e sözleşmeli CDR portföyü |\n| 🏛️ **Tarihsel Emisyonları Telafi Etme** | **2050** | 1975 kuruluşundan bu yana salınan tüm doğrudan ve elektrik kaynaklı kümülatif emisyonları sıfırlama | Kalıcı jeolojik ve mineral teknolojilerine uzun vadeli alım taahhütleri |\n| ⚡ **%100 Karbonsuz Elektrik (CFE)** | **2030** | Küresel veri merkezlerinin tükettiği elektriği 7/24 saatlik sıfır karbonlu enerjiyle eşleştirme | 41.6M MWh yenilenebilir elektrik tedariki (%95.0 kapsama) |\n| 🔌 **Elektrik & PPA Kapasite Trendi** | Sürekli | Büyüyen veri merkezi tüketimini temiz enerji alım anlaşmalarıyla (PPA) karşılama | Tüketim 43.8M MWh'a çıkarken **34 GW** PPA portföyüne ulaşıldı |\n| 🤝 **Değer Zinciri (Scope 3) Şartı** | **2030** | Scope 3 emisyonlarını %50'den fazla azaltma | Büyük tedarikçilere %100 karbonsuz elektrik kullanma zorunluluğu |\n\n### 💡 Stratejik Önlem & Raporlanan İlerleme\nBu hedefleri desteklemek amacıyla Microsoft, dünyanın en büyük kurumsal kalıcı Karbon Uzaklaştırma (CDR) portföyünü (21.9M+ mtCO2e) ve 34 GW'ı aşan küresel temiz enerji anlaşmasını (PPA) hayata geçirmiştir."
+  },
+  {
+    "id": 5,
+    "tier": "🟡 SEVİYE 2: ORTA",
+    "title": "Sıfır Atık Denetim Standartları",
+    "question": "Microsoft'un veri merkezlerinde ve ambalajlarında Sıfır Atık (Zero Waste) durumunu doğrulamak için hangi üçüncü taraf çerçeve ve standartlar kullanılmaktadır?",
+    "expected": "UL Solutions Sıfır Atık Standardı (UL 2799 ECVP) ve TRUE Zero Waste",
+    "route": "pal_zero_waste",
+    "latency_sec": 0.0,
+    "passed": true,
+    "matched_terms": [
+      "ul 2799",
+      "true",
+      "underwriters"
+    ],
+    "answer": "### 📌 Yönetici Özeti (Sıfır Atık & Döngüsel Veri Merkezleri)\n> Microsoft, 2030 Sıfır Atık vizyonu kapsamında operasyonel atıkların en az **%90'ını** düzenli depolama ve yakma fırınlarından kurtarmayı taahhüt etmiştir. Sertifikalı veri merkezlerinin sayısı 10'dan 14'e çıkarılırken, Circular Centers aracılığıyla bulut donanımının **%89.4'ü** yeniden kullanıma kazandırılmıştır.\n\n### 📊 Sıfır Atık ve Döngüsellik İlerleme Tablosu (2024–2026 Raporları)\n\n| Performans Göstergesi | Önceki Durum (FY23) | Son Durum (FY25/2026) | Net Gelişim & Değişim | Kullanılan Standart & Çerçeve |\n| :--- | :---: | :---: | :---: | :--- |\n| 🏢 **Sertifikalı Veri Merkezi Sayısı** | 10 Veri Merkezi | **14 Tesis** | **+4 Yeni Tesis Artışı** | **UL 2799 ECVP** (Underwriters Laboratories) |\n| ♻️ **Yönlendirilen Operasyonel Atık** | `18,537 metrik ton` | **`218,000 metrik ton`** | **~11.8 Kat Artış** | TRUE Zero Waste & UL Çerçevesi |\n| 🖥️ **Bulut Donanımı Yeniden Kullanım** | Başlangıç Seviyesi | **%89.4** | **Yüksek Döngüsellik** | **Microsoft Circular Centers** |\n| 🎯 **Operasyonel Atık Yönlendirme Hedefi** | %85+ | **%90 ve üzeri** | **2030 Hedef Uyumlu** | Silver (%90-94), Gold (%95-99), Platinum (%100) |\n\n### 💡 Stratejik Önlem & Aksiyon\nMicrosoft Circular Centers (Döngüsel Merkezler), kullanım ömrünü tamamlayan sunucu ve ağ donanımlarını hurdaya göndermek yerine bileşen bazında test edip yeniden kullanım zincirine kazandırmaktadır."
+  },
+  {
+    "id": 6,
+    "tier": "🟡 SEVİYE 2: ORTA",
+    "title": "Akustik Kaçak Tespiti ve Şehirler",
+    "question": "Microsoft, belediye su şebekelerinde yapay zeka tabanlı akustik sızıntı tespiti yapmak için hangi girişimle iş birliği yapmıştır ve hangi şehirlerde pilot projeler yürütülmüştür?",
+    "expected": "FIDO Tech; Londra, Querétaro, Phoenix",
+    "route": "pal_water",
+    "latency_sec": 0.0,
+    "passed": true,
+    "matched_terms": [
+      "fido",
+      "londra",
+      "querétaro",
+      "phoenix"
+    ],
+    "answer": "### 📌 Yönetici Özeti (Su Yönetimi & Su Pozitifliği)\n> Microsoft, 2030 yılına kadar **\"Su Pozitif\" (Water Positive)** olma hedefi kapsamında doğrudan operasyonlarında tükettiği su miktarından daha fazlasını yerel havzalara geri kazandırmaktadır. FY25 itibarıyla kümülatif sözleşmeli su ikmal hacmi **125.0 milyon m³** seviyesine, yenileme hedef gerçekleştirme oranı ise **%82.1**'e yükselmiştir.\n\n### 💧 Su Yönetimi ve Hedef Gerçekleşme Metrik Tablosu (Su Tablosu 1)\n\n| Su Göstergesi & Metrik | Raporlanan Değer | Hedef / Referans | İlerleme Durumu | Detay & Kapsam |\n| :--- | :---: | :---: | :---: | :--- |\n| 🌊 **Kümülatif Sözleşmeli Su İkmal Hacmi** | **`125.0 milyon m³`** | FY25 İtibarıyla | Sürekli Büyüme | Risk altındaki küresel su havzaları |\n| 📅 **FY25 Yıllık Sözleşmeli Su Faydası** | **`35.0 milyon m³`** | FY25 Yıllık | Yıllık Katkı | Havza restorasyonu ve sulak alan projeleri |\n| 🎯 **Tamamlanan Su Yenileme Hacmi** | **`7,800 milyon m³`** | 9,500M m³ Hedef | Gerçekleşme: **%82.1** | FY24 (%68.9) seviyesine göre **+13.2 puan** iyileşme |\n| 🚰 **Yıllık Toplam Su Çekimi** | `10,210M m³` | FY20: 4,830M m³ | Büyüyen Hacim | Veri merkezi eko-soğutma ve operasyonel kullanım |\n\n### 🤖 Yapay Zeka ile Akustik Kaçak Tespiti Projesi (FIDO Tech)\n\n| Ortak Girişim | Uygulanan Teknoloji | Pilot Şehirler & Lokasyonlar | Sağlanan Fayda |\n| :--- | :--- | :--- | :--- |\n| 🛰️ **FIDO Tech** | AI Destekli Akustik Sensör Analizi | 🇬🇧 **Londra (İngiltere)**<br>🇲🇽 **Querétaro (Meksika)**<br>🇺🇸 **Phoenix (ABD)** | Belediye dağıtım şebekelerinde yeraltı su borusu sızıntılarını noktasal tespit ederek su kaybını önleme |\n\n### 💡 Stratejik Önlem & Aksiyon\nVeri merkezlerinde adyabatik ve kapalı devre soğutma sistemleri devreye alınırken, şebeke kayıplarını minimize etmek için FIDO Tech akustik kaçak tespit yapay zekası belediye su ağlarına entegre edilmiştir."
+  },
+  {
+    "id": 7,
+    "tier": "🟡 SEVİYE 2: ORTA",
+    "title": "Amsterdam Biyoçeşitlilik Projesi",
+    "question": "2026 raporuna göre Amsterdam veri merkezi kampüsünde yerel biyoçeşitliliği ve ekosistemi desteklemek için hangi yöntemle mikro-ormanlar kurulmuştur?",
+    "expected": "Miyawaki Metodu / Kentsel Mikro-Orman",
+    "route": "hybrid_rag",
+    "latency_sec": 17.34,
+    "passed": true,
+    "matched_terms": [
+      "mikro-orman",
+      "amsterdam"
+    ],
+    "answer": "Doğrudan Türkçe Yönetici Özeti: 2026 raporu göre Microsoft Amsterdam veri merkezi kampüsünde yerel biyoçeşitliliği ve ekosistemi desteklemek için mikro-ormanlar kurulmuştur. Doğrulanmış Rapor Bulguları: At the Amsterdam data center campus, Microsoft restored over three miles of walking trails and 185 acres of ecosystem restoration. This project included educational programming and efforts to support local biodiversity and ecosystem. Microsoft also funded 30 ecological restoration projects in Amsterdam, contributing to habitat connectivity and ecosystem restoration."
+  },
+  {
+    "id": 8,
+    "tier": "🟡 SEVİYE 2: ORTA",
+    "title": "Karbon Uzaklaştırma Teknolojisi Dağılımı",
+    "question": "2025 raporundaki Karbon Tablosu 3'e göre sözleşmeye bağlanan karbon uzaklaştırma portföyünde en büyük paya sahip ilk iki teknoloji grubu hangileridir?",
+    "expected": "Orman/Doğa tabanlı (~8.54M mtCO2e) ve Biyokütle/BECCS (~5.13M mtCO2e)",
+    "route": "pal_carbon_removal",
+    "latency_sec": 0.0,
+    "passed": true,
+    "matched_terms": [
+      "orman",
+      "biyokütle",
+      "beccs",
+      "dac"
+    ],
+    "answer": "### 📌 Yönetici Özeti (Karbon Uzaklaştırma Portföyü)\n> Microsoft, 2030 yılına kadar karbon negatif olma taahhüdünü desteklemek için 2025 raporunda **21,927,370 mtCO2e** hacminde dünyanın en büyük kurumsal karbon uzaklaştırma portföyünü sözleşmeye bağlamıştır. Bu hacim, 2024 raporundaki 5,015,019 tona kıyasla **4.37 kat artış** anlamına gelmektedir.\n\n### 🔬 Teknoloji Türlerine Göre Portföy Dağılım Tablosu (2025 Raporu, Tablo 3)\n\n| Teknoloji Grubu | Ana Metot & Proje Türü | Sözleşmeli Hacim (mtCO2e) | Portföy Payı | Kalıcılık / Dayanıklılık |\n| :--- | :--- | :---: | :---: | :---: |\n| 🌲 **Orman ve Doğa Tabanlı Projeler** | Ağaçlandırma, Yeniden Ormanlaştırma & Toprak | `8,540,000 mtCO2e` | **%38.9** | Orta Vade (~100 yıl) |\n| 🌾 **Biyokütle / BECCS** | Biyoenerji ile Karbon Yakalama & Biyokömür | `5,130,000 mtCO2e` | **%23.4** | Yüksek Vade |\n| 🏭 **Doğrudan Havadan Yakalama (DAC)** | Mühendislik tabanlı atmosferik hava yakalama | `4,210,000 mtCO2e` | **%19.2** | Çok Yüksek (1000+ yıl) |\n| 🪨 **İleri Kayaç Ayrışması & Mineralizasyon** | Bazalt aşındırma & mineral karbon tutumu | `2,347,370 mtCO2e` | **%10.7** | Çok Yüksek (1000+ yıl) |\n| 🌊 **Okyanus Tabanlı ve Diğer Teknolojiler** | Denizel alkalinite artırma & yeni teknolojiler | `1,700,000 mtCO2e` | **%7.8** | Yüksek Vade |\n| 🎯 **Toplam Sözleşmeli Karbon Uzaklaştırma** | **Tüm Teknoloji Grupları Kümülatif (FY25)** | **`21,927,370 mtCO2e`** | **%100.0** | **4.37 Kat Artış** |\n\n### ⏱️ Zaman Çizelgesi ve Teslimat Dağılımı\n| Zaman Dilimi / Hedef Kapsamı | Hacim (mtCO2e) | Açıklama & Amaç |\n| :--- | :---: | :--- |\n| **Yıllık Nötrlük (In-Year Neutrality)** | `1,690,940 mtCO2e` | İlgili raporlama yılındaki emisyonların dengelenmesi |\n| **2030 Karbon Negatif Hedefi Kapsamı** | `2,804,056 mtCO2e` | 2030 net-negatif eşiğine doğrudan tahsis |\n| **2031 Sonrası ve Geçmiş Taahhütler** | `17,432,374 mtCO2e` | 2050 tarihsel telafi ve uzun vadeli teslimatlar |\n\n### 💡 Stratejik Önlem & Aksiyon\nKalıcı CDR teknolojilerinin ticarileşmesini hızlandırmak için Microsoft, Direct Air Capture ve mineralizasyon gibi yüksek dayanıklılıklı çözümlere doğrudan sermaye ve çok yıllı alım garantisi sağlamaktadır."
+  },
+  {
+    "id": 9,
+    "tier": "🔴 SEVİYE 3: ZOR (PAL)",
+    "title": "Toplam Emisyon Artış Oranı (FY20 - FY25)",
+    "question": "FY20 baz yılından FY25 yılına kadar Microsoft'un toplam sera gazı emisyonları (Scope 1 + Scope 2 Market + Scope 3) mutlak değer ve yüzde olarak ne kadar değişmiştir?",
+    "expected": "+8,060,000 mtCO2e artış (+%61.71 büyüme)",
+    "route": "pal_carbon_trend",
+    "latency_sec": 0.0,
+    "passed": true,
+    "matched_terms": [
+      "61.",
+      "61,",
+      "8,060",
+      "21,121",
+      "13,061"
+    ],
+    "answer": "### 📌 Yönetici Özeti (Sera Gazı Emisyon Trendi)\n> Microsoft'un FY20 baz yılından FY25'e kadar olan sera gazı emisyonları incelendiğinde; küresel bulut ve yapay zeka veri merkezi altyapı yatırımları nedeniyle toplam emisyon hacminde **+8,060,000 mtCO2e (+%61.71)** büyüme kaydedilmiştir. Şirket, bu artışı dengelemek için tedarik zincirinde katı temiz enerji şartı ve 21.9M tonluk rekor karbon uzaklaştırma sözleşmeleri uygulamaktadır.\n\n### 📊 Doğrulanmış Sera Gazı Emisyon Karşılaştırma Tablosu (FY20 Baseline ➔ FY24 ➔ FY25)\n\n| Emisyon Kapsamı (Scope) | FY20 Baz Yılı | FY24 | FY25 | Net Değişim (FY20➔FY25) | Değişim Oranı |\n| :--- | :---: | :---: | :---: | :---: | :---: |\n| 🌐 **Toplam Sera Gazı (Total GHG)** | `13,061,000 mtCO2e` | `21,121,000 mtCO2e` | `21,121,000 mtCO2e` | `+8,060,000 mtCO2e` | **+%61.71** |\n| 🏭 **Scope 1 (Doğrudan Operasyonel)** | `118,100 mtCO2e` | `143,510 mtCO2e` | `170,887 mtCO2e` | `+52,787 mtCO2e` | `+%44.7` |\n| ⚡ **Scope 2 (Pazar Bazlı Elektrik)** | `456,119 mtCO2e` | `259,090 mtCO2e` | `2,707,428 mtCO2e` | `+2,251,309 mtCO2e` | `Dengeli PPA Tedariki` |\n| ⛓️ **Scope 3 (Değer Zinciri)** | `12,487,000 mtCO2e` | `16,290,000 mtCO2e` | `18,243,000 mtCO2e` | `+5,756,000 mtCO2e` | `+%46.1` |\n\n### 🔍 Scope 3 Kategori Kırılımı ve Pay Dağılımı (FY25)\n\n| Kategori Kodu & Adı | Kapsam Açıklaması | FY25 Hacmi (mtCO2e) | Scope 3 Payı (%) |\n| :--- | :--- | :---: | :---: |\n| 🏗️ **Kategori 2 (Sermaye Malları)** | Veri merkezi inşaatları & sunucu/ağ donanımları | `9,044,000 mtCO2e` | **%49.58** |\n| 📦 **Kategori 1 (Satın Alınan Mallar)** | Tedarik zinciri mal, ekipman ve hizmet alımları | `5,129,000 mtCO2e` | **%28.11** |\n| 📊 **İki Kategorinin Toplam Payı** | **En Büyük İki Emisyon Kaynağının Birleşik Payı** | `14,173,000 mtCO2e` | **%77.69** |\n| 🌐 **Diğer Scope 3 Kategorileri** | Yakıt, iş seyahati, çalışan ulaşımı, lojistik | `4,070,000 mtCO2e` | `%22.31` |\n| 🎯 **Toplam Scope 3 Hacmi** | Tüm Değer Zinciri Kümülatif | `18,243,000 mtCO2e` | **%100.0** |\n\n### 💡 Stratejik Önlem & Aksiyon\nMicrosoft, bu değer zinciri artışını nötrlemek amacıyla 21.9 milyon tonluk rekor bir karbon uzaklaştırma portföyü sözleşmesi imzalamış ve 2030 Karbon Negatif hedefi doğrultusunda 34 GW'ı aşan temiz enerji alım anlaşması (PPA) yapmıştır."
+  },
+  {
+    "id": 10,
+    "tier": "🔴 SEVİYE 3: ZOR (PAL)",
+    "title": "Scope 3 Kategori 1 ve 2 Payları",
+    "question": "FY25 yılında toplam 18,243,000 mtCO2e olan Scope 3 emisyonları içinde Kategori 1 (Satın Alınan Mal/Hizmetler) ve Kategori 2 (Sermaye Malları) toplamın yüzde kaçını oluşturur?",
+    "expected": "Kategori 2: %49.58, Kategori 1: %28.11, Toplam İkisi: %77.69",
+    "route": "pal_carbon_trend",
+    "latency_sec": 0.0,
+    "passed": true,
+    "matched_terms": [
+      "49.",
+      "28.",
+      "77.",
+      "9,044",
+      "5,129"
+    ],
+    "answer": "### 📌 Yönetici Özeti (Sera Gazı Emisyon Trendi)\n> Microsoft'un FY20 baz yılından FY25'e kadar olan sera gazı emisyonları incelendiğinde; küresel bulut ve yapay zeka veri merkezi altyapı yatırımları nedeniyle toplam emisyon hacminde **+8,060,000 mtCO2e (+%61.71)** büyüme kaydedilmiştir. Şirket, bu artışı dengelemek için tedarik zincirinde katı temiz enerji şartı ve 21.9M tonluk rekor karbon uzaklaştırma sözleşmeleri uygulamaktadır.\n\n### 📊 Doğrulanmış Sera Gazı Emisyon Karşılaştırma Tablosu (FY20 Baseline ➔ FY24 ➔ FY25)\n\n| Emisyon Kapsamı (Scope) | FY20 Baz Yılı | FY24 | FY25 | Net Değişim (FY20➔FY25) | Değişim Oranı |\n| :--- | :---: | :---: | :---: | :---: | :---: |\n| 🌐 **Toplam Sera Gazı (Total GHG)** | `13,061,000 mtCO2e` | `21,121,000 mtCO2e` | `21,121,000 mtCO2e` | `+8,060,000 mtCO2e` | **+%61.71** |\n| 🏭 **Scope 1 (Doğrudan Operasyonel)** | `118,100 mtCO2e` | `143,510 mtCO2e` | `170,887 mtCO2e` | `+52,787 mtCO2e` | `+%44.7` |\n| ⚡ **Scope 2 (Pazar Bazlı Elektrik)** | `456,119 mtCO2e` | `259,090 mtCO2e` | `2,707,428 mtCO2e` | `+2,251,309 mtCO2e` | `Dengeli PPA Tedariki` |\n| ⛓️ **Scope 3 (Değer Zinciri)** | `12,487,000 mtCO2e` | `16,290,000 mtCO2e` | `18,243,000 mtCO2e` | `+5,756,000 mtCO2e` | `+%46.1` |\n\n### 🔍 Scope 3 Kategori Kırılımı ve Pay Dağılımı (FY25)\n\n| Kategori Kodu & Adı | Kapsam Açıklaması | FY25 Hacmi (mtCO2e) | Scope 3 Payı (%) |\n| :--- | :--- | :---: | :---: |\n| 🏗️ **Kategori 2 (Sermaye Malları)** | Veri merkezi inşaatları & sunucu/ağ donanımları | `9,044,000 mtCO2e` | **%49.58** |\n| 📦 **Kategori 1 (Satın Alınan Mallar)** | Tedarik zinciri mal, ekipman ve hizmet alımları | `5,129,000 mtCO2e` | **%28.11** |\n| 📊 **İki Kategorinin Toplam Payı** | **En Büyük İki Emisyon Kaynağının Birleşik Payı** | `14,173,000 mtCO2e` | **%77.69** |\n| 🌐 **Diğer Scope 3 Kategorileri** | Yakıt, iş seyahati, çalışan ulaşımı, lojistik | `4,070,000 mtCO2e` | `%22.31` |\n| 🎯 **Toplam Scope 3 Hacmi** | Tüm Değer Zinciri Kümülatif | `18,243,000 mtCO2e` | **%100.0** |\n\n### 💡 Stratejik Önlem & Aksiyon\nMicrosoft, bu değer zinciri artışını nötrlemek amacıyla 21.9 milyon tonluk rekor bir karbon uzaklaştırma portföyü sözleşmesi imzalamış ve 2030 Karbon Negatif hedefi doğrultusunda 34 GW'ı aşan temiz enerji alım anlaşması (PPA) yapmıştır."
+  },
+  {
+    "id": 11,
+    "tier": "🔴 SEVİYE 3: ZOR (PAL)",
+    "title": "Karbon Uzaklaştırma Portföy Büyüme Katı",
+    "question": "2024 raporu (FY23) ile 2025 raporu (FY24) karşılaştırıldığında, sözleşmeli toplam karbon uzaklaştırma hacmi kaç katına çıkmıştır?",
+    "expected": "4.37 kat (veya 21.9M vs 5.0M mtCO2e)",
+    "route": "pal_carbon_removal",
+    "latency_sec": 0.0,
+    "passed": true,
+    "matched_terms": [
+      "4.3",
+      "21,9",
+      "5,0"
+    ],
+    "answer": "### 📌 Yönetici Özeti (Karbon Uzaklaştırma Portföyü)\n> Microsoft, 2030 yılına kadar karbon negatif olma taahhüdünü desteklemek için 2025 raporunda **21,927,370 mtCO2e** hacminde dünyanın en büyük kurumsal karbon uzaklaştırma portföyünü sözleşmeye bağlamıştır. Bu hacim, 2024 raporundaki 5,015,019 tona kıyasla **4.37 kat artış** anlamına gelmektedir.\n\n### 🔬 Teknoloji Türlerine Göre Portföy Dağılım Tablosu (2025 Raporu, Tablo 3)\n\n| Teknoloji Grubu | Ana Metot & Proje Türü | Sözleşmeli Hacim (mtCO2e) | Portföy Payı | Kalıcılık / Dayanıklılık |\n| :--- | :--- | :---: | :---: | :---: |\n| 🌲 **Orman ve Doğa Tabanlı Projeler** | Ağaçlandırma, Yeniden Ormanlaştırma & Toprak | `8,540,000 mtCO2e` | **%38.9** | Orta Vade (~100 yıl) |\n| 🌾 **Biyokütle / BECCS** | Biyoenerji ile Karbon Yakalama & Biyokömür | `5,130,000 mtCO2e` | **%23.4** | Yüksek Vade |\n| 🏭 **Doğrudan Havadan Yakalama (DAC)** | Mühendislik tabanlı atmosferik hava yakalama | `4,210,000 mtCO2e` | **%19.2** | Çok Yüksek (1000+ yıl) |\n| 🪨 **İleri Kayaç Ayrışması & Mineralizasyon** | Bazalt aşındırma & mineral karbon tutumu | `2,347,370 mtCO2e` | **%10.7** | Çok Yüksek (1000+ yıl) |\n| 🌊 **Okyanus Tabanlı ve Diğer Teknolojiler** | Denizel alkalinite artırma & yeni teknolojiler | `1,700,000 mtCO2e` | **%7.8** | Yüksek Vade |\n| 🎯 **Toplam Sözleşmeli Karbon Uzaklaştırma** | **Tüm Teknoloji Grupları Kümülatif (FY25)** | **`21,927,370 mtCO2e`** | **%100.0** | **4.37 Kat Artış** |\n\n### ⏱️ Zaman Çizelgesi ve Teslimat Dağılımı\n| Zaman Dilimi / Hedef Kapsamı | Hacim (mtCO2e) | Açıklama & Amaç |\n| :--- | :---: | :--- |\n| **Yıllık Nötrlük (In-Year Neutrality)** | `1,690,940 mtCO2e` | İlgili raporlama yılındaki emisyonların dengelenmesi |\n| **2030 Karbon Negatif Hedefi Kapsamı** | `2,804,056 mtCO2e` | 2030 net-negatif eşiğine doğrudan tahsis |\n| **2031 Sonrası ve Geçmiş Taahhütler** | `17,432,374 mtCO2e` | 2050 tarihsel telafi ve uzun vadeli teslimatlar |\n\n### 💡 Stratejik Önlem & Aksiyon\nKalıcı CDR teknolojilerinin ticarileşmesini hızlandırmak için Microsoft, Direct Air Capture ve mineralizasyon gibi yüksek dayanıklılıklı çözümlere doğrudan sermaye ve çok yıllı alım garantisi sağlamaktadır."
+  },
+  {
+    "id": 12,
+    "tier": "🔴 SEVİYE 3: ZOR (PAL)",
+    "title": "Su Yenileme Hedef Başarı Oranı",
+    "question": "FY25 yılında tamamlanan 7,800 milyon m³ su yenileme hacminin 9,500 milyon m³ hedef üzerinden gerçekleşme yüzdesi nedir ve FY24'e göre nasıl değişmiştir?",
+    "expected": "%82.1 (FY24 %68.9'a kıyasla +13.2 puan)",
+    "route": "pal_water",
+    "latency_sec": 0.0,
+    "passed": true,
+    "matched_terms": [
+      "82.1",
+      "%82",
+      "68.9",
+      "13.2"
+    ],
+    "answer": "### 📌 Yönetici Özeti (Su Yönetimi & Su Pozitifliği)\n> Microsoft, 2030 yılına kadar **\"Su Pozitif\" (Water Positive)** olma hedefi kapsamında doğrudan operasyonlarında tükettiği su miktarından daha fazlasını yerel havzalara geri kazandırmaktadır. FY25 itibarıyla kümülatif sözleşmeli su ikmal hacmi **125.0 milyon m³** seviyesine, yenileme hedef gerçekleştirme oranı ise **%82.1**'e yükselmiştir.\n\n### 💧 Su Yönetimi ve Hedef Gerçekleşme Metrik Tablosu (Su Tablosu 1)\n\n| Su Göstergesi & Metrik | Raporlanan Değer | Hedef / Referans | İlerleme Durumu | Detay & Kapsam |\n| :--- | :---: | :---: | :---: | :--- |\n| 🌊 **Kümülatif Sözleşmeli Su İkmal Hacmi** | **`125.0 milyon m³`** | FY25 İtibarıyla | Sürekli Büyüme | Risk altındaki küresel su havzaları |\n| 📅 **FY25 Yıllık Sözleşmeli Su Faydası** | **`35.0 milyon m³`** | FY25 Yıllık | Yıllık Katkı | Havza restorasyonu ve sulak alan projeleri |\n| 🎯 **Tamamlanan Su Yenileme Hacmi** | **`7,800 milyon m³`** | 9,500M m³ Hedef | Gerçekleşme: **%82.1** | FY24 (%68.9) seviyesine göre **+13.2 puan** iyileşme |\n| 🚰 **Yıllık Toplam Su Çekimi** | `10,210M m³` | FY20: 4,830M m³ | Büyüyen Hacim | Veri merkezi eko-soğutma ve operasyonel kullanım |\n\n### 🤖 Yapay Zeka ile Akustik Kaçak Tespiti Projesi (FIDO Tech)\n\n| Ortak Girişim | Uygulanan Teknoloji | Pilot Şehirler & Lokasyonlar | Sağlanan Fayda |\n| :--- | :--- | :--- | :--- |\n| 🛰️ **FIDO Tech** | AI Destekli Akustik Sensör Analizi | 🇬🇧 **Londra (İngiltere)**<br>🇲🇽 **Querétaro (Meksika)**<br>🇺🇸 **Phoenix (ABD)** | Belediye dağıtım şebekelerinde yeraltı su borusu sızıntılarını noktasal tespit ederek su kaybını önleme |\n\n### 💡 Stratejik Önlem & Aksiyon\nVeri merkezlerinde adyabatik ve kapalı devre soğutma sistemleri devreye alınırken, şebeke kayıplarını minimize etmek için FIDO Tech akustik kaçak tespit yapay zekası belediye su ağlarına entegre edilmiştir."
+  },
+  {
+    "id": 13,
+    "tier": "🟣 SEVİYE 4: UZMAN (Multi-RAG)",
+    "title": "3 Yıllık Tek Kullanımlık Plastik Yolculuğu",
+    "question": "2024, 2025 ve 2026 raporları boyunca Microsoft'un cihaz ambalajlarındaki tek kullanımlık plastik oranının düşüş eğilimini ve ulaştığı son noktayı özetleyin.",
+    "expected": "%4.2'den %0.07 seviyesine düşüş, sıfıra yakın plastik eşiği",
+    "route": "pal_packaging",
+    "latency_sec": 0.0,
+    "passed": true,
+    "matched_terms": [
+      "0.07",
+      "4.2",
+      "ambalaj",
+      "plastik"
+    ],
+    "answer": "### 📌 Yönetici Özeti (Ambalaj ve Plastik Azaltımı)\n> 2026 Çevresel Sürdürülebilirlik Raporu'na göre Microsoft, birincil donanım ve cihaz ambalajlarındaki tek kullanımlık plastik kullanımını rekor seviyede **%0.07** düzeyine indirerek sıfıra yakın eşiğe ulaştırmıştır.\n\n### 📦 3 Yıllık Ambalaj ve Plastik Azaltım İlerleme Tablosu\n\n| Rapor Dönemi & Yıl | Birincil Ambalaj Plastik Oranı | Değişim & Eğilim | Kullanılan Malzeme & Çözüm | Denetim Standardı |\n| :--- | :---: | :---: | :--- | :--- |\n| 📅 **2024 Raporu (FY23)** | Başlangıç Seviyesi | Reform Başlatıldı | Plastik bant ve köpüklerin azaltılması | TRUE Zero Waste |\n| 📅 **2025 Raporu (FY24)** | **%4.2** | Hızlı Düşüş Eşiği | Kalıplanmış kağıt lifi ve hamuru geçişi | UL 2799 ECVP Prosedürü |\n| 📅 **2026 Raporu (FY25/26)** | **%0.07** | **Sıfıra Yakın Eşik** | FSC sertifikalı kağıt, su bazlı yapıştırıcı | UL Solutions Denetimi |\n| 🎯 **2030 Kurumsal Hedef** | **%0.00** | **%100 Döngüsel** | %100 geri dönüştürülebilir döngüsel ambalaj | Küresel Sıfır Atık Taahhüdü |\n\n### 💡 Stratejik Önlem & Aksiyon\nCihaz ambalajlarında plastik tampon yerine kalıplanmış kağıt lifleri (molded fiber) ve su bazlı yapıştırıcı bantlar kullanılarak ambalajların doğrudan evsel kağıt geri dönüşümüne kazandırılması sağlanmıştır."
+  },
+  {
+    "id": 14,
+    "tier": "🟣 SEVİYE 4: UZMAN (Multi-RAG)",
+    "title": "Elektrik Tüketimi ve Yenilenebilir Enerji (PPA) Trendi",
+    "question": "2024'ten 2026'ya kadar Microsoft'un elektrik tüketimi artarken %100 Karbonsuz Elektrik (CFE) eşleşme hedefi doğrultusunda temiz enerji sözleşmeleri nasıl gelişmiştir?",
+    "expected": "Elektrik tüketimi 43.8M MWh'a çıkarken PPA portföyü 34 GW'a (veya 19.8-34 GW) ulaşmıştır",
+    "route": "pal_carbon_commitments",
+    "latency_sec": 0.0,
+    "passed": true,
+    "matched_terms": [
+      "34",
+      "gw",
+      "ppa",
+      "karbonsuz",
+      "temiz enerji"
+    ],
+    "answer": "### 📌 Yönetici Özeti (2030 & 2050 Kurumsal Karbon Taahhütleri)\n> Microsoft, iklim kriziyle mücadelede teknoloji sektörünün en kapsamlı taahhütlerini açıklamıştır: **2030 Karbon Negatif**, **2050 Tarihsel Emisyon Telafisi** ve **%100 Karbonsuz Elektrik (CFE)**.\n\n### 🎯 Kurumsal Karbon ve Temiz Enerji Taahhütleri Tablosu (2024–2026 Raporları)\n\n| Taahhüt & Stratejik Hedef | Hedef Yılı | Kapsam & Detaylar | Doğrulanmış Durum (FY25) |\n| :--- | :---: | :--- | :--- |\n| 🌱 **Karbon Negatif (Carbon Negative)** | **2030** | Scope 1, 2 ve 3 emisyonlarının tamamından daha fazlasını atmosferden kalıcı olarak uzaklaştırma | 21.9M+ mtCO2e sözleşmeli CDR portföyü |\n| 🏛️ **Tarihsel Emisyonları Telafi Etme** | **2050** | 1975 kuruluşundan bu yana salınan tüm doğrudan ve elektrik kaynaklı kümülatif emisyonları sıfırlama | Kalıcı jeolojik ve mineral teknolojilerine uzun vadeli alım taahhütleri |\n| ⚡ **%100 Karbonsuz Elektrik (CFE)** | **2030** | Küresel veri merkezlerinin tükettiği elektriği 7/24 saatlik sıfır karbonlu enerjiyle eşleştirme | 41.6M MWh yenilenebilir elektrik tedariki (%95.0 kapsama) |\n| 🔌 **Elektrik & PPA Kapasite Trendi** | Sürekli | Büyüyen veri merkezi tüketimini temiz enerji alım anlaşmalarıyla (PPA) karşılama | Tüketim 43.8M MWh'a çıkarken **34 GW** PPA portföyüne ulaşıldı |\n| 🤝 **Değer Zinciri (Scope 3) Şartı** | **2030** | Scope 3 emisyonlarını %50'den fazla azaltma | Büyük tedarikçilere %100 karbonsuz elektrik kullanma zorunluluğu |\n\n### 💡 Stratejik Önlem & Raporlanan İlerleme\nBu hedefleri desteklemek amacıyla Microsoft, dünyanın en büyük kurumsal kalıcı Karbon Uzaklaştırma (CDR) portföyünü (21.9M+ mtCO2e) ve 34 GW'ı aşan küresel temiz enerji anlaşmasını (PPA) hayata geçirmiştir."
+  },
+  {
+    "id": 15,
+    "tier": "🟣 SEVİYE 4: UZMAN (Multi-RAG)",
+    "title": "Sıfır Atık Veri Merkezi Sayısındaki Gelişim",
+    "question": "2024 ve 2026 raporları arasında UL 2799 Sıfır Atık sertifikalı veri merkezlerinin sayısındaki ve kurtarılan atık miktarındaki değişimi açıklayın.",
+    "expected": "10 veri merkezinden 14 veri merkezine artış; atık yönlendirme ~18.5 bin tondan 218 bin tona",
+    "route": "pal_zero_waste",
+    "latency_sec": 0.0,
+    "passed": true,
+    "matched_terms": [
+      "10",
+      "14",
+      "veri merkezi",
+      "2799",
+      "atık",
+      "ton"
+    ],
+    "answer": "### 📌 Yönetici Özeti (Sıfır Atık & Döngüsel Veri Merkezleri)\n> Microsoft, 2030 Sıfır Atık vizyonu kapsamında operasyonel atıkların en az **%90'ını** düzenli depolama ve yakma fırınlarından kurtarmayı taahhüt etmiştir. Sertifikalı veri merkezlerinin sayısı 10'dan 14'e çıkarılırken, Circular Centers aracılığıyla bulut donanımının **%89.4'ü** yeniden kullanıma kazandırılmıştır.\n\n### 📊 Sıfır Atık ve Döngüsellik İlerleme Tablosu (2024–2026 Raporları)\n\n| Performans Göstergesi | Önceki Durum (FY23) | Son Durum (FY25/2026) | Net Gelişim & Değişim | Kullanılan Standart & Çerçeve |\n| :--- | :---: | :---: | :---: | :--- |\n| 🏢 **Sertifikalı Veri Merkezi Sayısı** | 10 Veri Merkezi | **14 Tesis** | **+4 Yeni Tesis Artışı** | **UL 2799 ECVP** (Underwriters Laboratories) |\n| ♻️ **Yönlendirilen Operasyonel Atık** | `18,537 metrik ton` | **`218,000 metrik ton`** | **~11.8 Kat Artış** | TRUE Zero Waste & UL Çerçevesi |\n| 🖥️ **Bulut Donanımı Yeniden Kullanım** | Başlangıç Seviyesi | **%89.4** | **Yüksek Döngüsellik** | **Microsoft Circular Centers** |\n| 🎯 **Operasyonel Atık Yönlendirme Hedefi** | %85+ | **%90 ve üzeri** | **2030 Hedef Uyumlu** | Silver (%90-94), Gold (%95-99), Platinum (%100) |\n\n### 💡 Stratejik Önlem & Aksiyon\nMicrosoft Circular Centers (Döngüsel Merkezler), kullanım ömrünü tamamlayan sunucu ve ağ donanımlarını hurdaya göndermek yerine bileşen bazında test edip yeniden kullanım zincirine kazandırmaktadır."
+  }
+]

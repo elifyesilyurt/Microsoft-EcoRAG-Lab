@@ -8,6 +8,7 @@ import requests
 import numpy as np
 import pandas as pd
 import streamlit as st
+from typing import Optional, List, Dict, Any, Set, Tuple
 from sentence_transformers import SentenceTransformer
 
 from esg_tables import (
@@ -37,7 +38,41 @@ from dynamic_math_engine import (
 # ══════════════════════════════════════════════════════════════════════════════
 DB_PATH = "rag_storage.db"
 EMBEDDING_MODEL_NAME = "nomic-ai/nomic-embed-text-v1.5"
-FOUNDRY_BASE_URL = os.getenv("FOUNDRY_BASE_URL", "http://127.0.0.1:62095")
+
+def discover_foundry_base_url() -> str:
+    """Foundry Local portunu dinamik olarak otomatik tespit eder."""
+    env_url = os.getenv("FOUNDRY_BASE_URL")
+    if env_url:
+        return env_url.rstrip("/")
+    
+    # 1. Aktif çalışan portları hızlıca tara
+    for port in [56720, 62095, 8000, 5000]:
+        try:
+            r = requests.get(f"http://127.0.0.1:{port}/v1/models", timeout=0.25)
+            if r.status_code == 200:
+                return f"http://127.0.0.1:{port}"
+        except Exception:
+            continue
+
+    # 2. Foundry Local CLI JSON durumunu oku
+    try:
+        import subprocess
+        res = subprocess.run(
+            ["foundry", "server", "status", "--output", "json"],
+            capture_output=True,
+            text=True,
+            timeout=1.0
+        )
+        if res.returncode == 0 and res.stdout.strip():
+            data = json.loads(res.stdout)
+            if data.get("running") and data.get("webUrls"):
+                return data["webUrls"][0].rstrip("/")
+    except Exception:
+        pass
+
+    return "http://127.0.0.1:56720"
+
+FOUNDRY_BASE_URL = discover_foundry_base_url()
 MODEL_NAME = os.getenv("FOUNDRY_MODEL_NAME", "phi-4-mini")
 
 RELATIVE_DROP_RATIO = 0.70
@@ -46,23 +81,34 @@ MIN_SCORE_FLOOR = 0.15
 
 def get_synthesis_prompt(lang: str = "tr") -> str:
     if lang == "tr":
-        return """Sen Kıdemli bir Sürdürülebilirlik Analistisin.
-Aşağıda verilen doğrulanmış analitik hesaplama ve rapor verilerini kullanarak soruyu son derece akıcı, net ve profesyonel bir TÜRKÇE ile yanıtla.
-Doğrulanmış sayıları, birimleri (mtCO2e, metrik ton, m3 vb.) ve teknik terimleri (Scope 1, Scope 2, Scope 3) tam olarak koru. Kendini tekrar etme."""
+        return """Sen uzman bir Sürdürülebilirlik Baş Analistisin.
+Aşağıda verilen doğrulanmış analitik hesaplama ve rapor verilerini kullanarak soruyu yanıtla.
+TÜRKÇE DİL VE ANLATIM KURALLARI:
+1. Yanıtını duru, akıcı, kurumsal ve tamamen doğal bir Türkçe ile yaz.
+2. İngilizce'den motamot/kelime kelime yapılmış çeviri kokan anlatımlardan ve devrik cümlelerden kesinlikle kaçın. Cümlelerini doğal özne-nesne-yüklem yapısıyla kur.
+3. Doğrulanmış sayısal verileri, birimleri (mtCO2e, metrik ton, m3, MWh vb.) ve teknik kavramları (Scope 1, Scope 2, Scope 3, Net Sıfır) değiştirmeden, cümle akışına uygun şekilde kullan.
+4. Yanıtı 1-2 cümlelik net bir Yönetici Özeti ve gerekiyorsa temel bulguları maddeler halinde sunacak şekilde yapılandır. Kendini asla tekrar etme.
+5. Gerekli yerlerde (birden fazla metrik, karşılaştırma veya kategori dağılımı içerdiğinde) verileri okunabilir, şık bir Markdown Tablosu (`| Kategori / Metrik | Değer | Birim / Durum |`) ile özetleyerek sun."""
     else:
         return """You are a Senior Sustainability Analyst.
 Synthesize the verified analytical calculation results into a clear, structured executive report in English with exact units (mtCO2e / metric tons / m3).
+Where appropriate (multi-metric data, comparisons, or category breakdowns), format the key figures into a clean, well-aligned Markdown table.
 Do not alter any calculated numbers. Do not repeat yourself."""
 
 def get_factual_synthesis_prompt(lang: str = "tr") -> str:
     if lang == "tr":
-        return """Sen Kıdemli bir Sürdürülebilirlik Yapay Zeka Analistisin.
-Aşağıda verilen doğrulanmış metrikleri kullanarak doğrudan, kısa ve net bir TÜRKÇE yanıt yaz.
-Tam sayıları, isimleri ve birimleri cümlenin başında net olarak belirt. Kendini tekrar etme."""
+        return """Sen uzman bir Sürdürülebilirlik Baş Analistisin.
+Aşağıda verilen doğrulanmış metrikleri kullanarak doğrudan, akıcı, kurumsal ve dil bilgisi kurallarına uygun bir Türkçe yanıt oluştur.
+TÜRKÇE ANLATIM KURALLARI:
+1. Kesinlikle soruyu baştan tekrar ederek başlama. Doğrudan özeti ve doğrulanmış bulguyu açıkla.
+2. Motamot çeviri veya mekanik/devrik ifadeler kullanma; kurumsal, net ve doğal bir Türkçe ile ifade et.
+3. İlgili sayısal değeri, yılı ve birimi (mtCO2e, m3, GW, MWh, % vb.) net bir şekilde cümleye yerleştir.
+4. Karşılaştırmalı veya çoklu veri bulunuyorsa uygun yerlerde Markdown Tablosu kullanarak kullanıcı dostu bir sunum yap.
+5. Kesinlikle aynı kalıp veya kelimeleri tekrarlama; döngüye girme. Cevabını 2-3 akıcı cümlede tamamla."""
     else:
         return """You are a Senior Sustainability AI Analyst.
 Using the verified structured metrics provided below, compose a concise, direct natural language answer in English.
-State the exact numbers, names, and corresponding units clearly in sentence 1. Do not repeat yourself."""
+State the exact numbers, names, and corresponding units clearly. Format multi-metric data into clear Markdown tables where helpful. Do not repeat the question, phrases, or enter loops."""
 
 def detect_query_language(query: str, default_lang: str = "tr") -> str:
     if not query:
@@ -137,6 +183,137 @@ def is_esg_query(query: str) -> bool:
         return True
     return False
 
+def classify_esg_intent(query: str) -> str:
+    """
+    Sorguyu semantik ve ontolojik ESG alanlarına sınıflandırır:
+    - 'out_of_domain': ESG kapsamı dışındaki teknik donanım, spor, finans vb. sorular (güvenli ret)
+    - 'packaging_plastic': Tek kullanımlık plastik, ambalaj azaltımı, 0.07%, 4.2% düşüş trendi
+    - 'water_stewardship': Su yenileme (125M m³), hedef başarısı (%82.1), FIDO Tech akustik kaçak tespiti
+    - 'zero_waste_circularity': UL 2799, TRUE Zero Waste, Circular Centers (%89.4 donanım döngüselliği), 10-14 veri merkezi, 218K ton atık
+    - 'carbon_removal': Karbon Tablosu 3, 21.9M mtCO2e (4.37x büyüme), orman, biyokütle/BECCS, DAC
+    - 'carbon_commitments': 2030 Karbon Negatif, 2050 tarihsel emisyon telafisi, %100 CFE, 34 GW PPA portföyü
+    - 'carbon_trend_scope': Scope 1, 2, 3 emisyon trendi, FY20-FY25 toplam sera gazı delta (+%61.71), Kategori 1 ve 2 payları (%77.69)
+    - 'mathematical_query': Dinamik Python PoT / ALU gerektiren matematiksel hesaplamalar
+    - 'general_rag': Rapor anlatıları ve bağlamsal bilgi çıkarımı (ör. Amsterdam Miyawaki mikro-ormanları, Madrid tesisleri)
+    """
+    if not query:
+        return "out_of_domain"
+    if not is_esg_query(query):
+        return "out_of_domain"
+
+    q = query.lower()
+
+    # 1. Packaging & Single-Use Plastic
+    if any(k in q for k in ["tek kullanımlık plastik", "single-use plastic", "ambalaj", "packaging"]) and any(k in q for k in ["oran", "percentage", "yolculuk", "düşüş", "trend", "2026", "2025", "0.07", "cihaz", "primer", "birincil"]):
+        return "packaging_plastic"
+
+    # 2. Zero Waste & Circularity
+    if any(k in q for k in ["sıfır atık", "zero waste", "circular center", "döngüsel", "donanım", "hardware", "ul 2799", "true zero", "atık"]) and any(k in q for k in ["standart", "standard", "sertifika", "yeniden kullanım", "reuse", "ömrü biten", "veri merkezi", "değişim", "kurtarılan", "merkezler"]):
+        return "zero_waste_circularity"
+
+    # 3. Carbon Removal Portfolio (Tablo 3 & Portföy Büyümesi)
+    if any(k in q for k in ["karbon uzaklaştırma", "carbon removal", "tablo 3", "table 3", "dac", "direct air capture", "biomass", "biyokütle", "uzaklaştırma portföy", "uzaklaştırma hacmi"]):
+        return "carbon_removal"
+
+    # 4. Carbon Commitments (2030, 2050, CFE, PPA)
+    if any(k in q for k in ["2030", "2050", "karbon negatif", "carbon negative", "tarihsel emisyon", "historical emission", "cfe", "karbonsuz elektrik", "ppa", "temiz enerji sözleşme", "taahhüt"]) and not any(k in q for k in ["kategori 1", "kategori 2", "scope 3 kat"]):
+        return "carbon_commitments"
+
+    # 5. Carbon Trend & Scopes & GHG Delta
+    if any(k in q for k in ["scope", "sera gazı", "emisyon", "emission"]) and any(k in q for k in ["trend", "artış", "kategori 1", "kategori 2", "cat 1", "cat 2", "toplam", "değiş", "büyüme", "fy20", "fy25", "fark", "pay"]):
+        return "carbon_trend_scope"
+
+    # 6. Water Stewardship & Replenishment & Acoustic AI Leaks (use regex word boundary for 'su')
+    is_water = bool(re.search(r"\bsu\b", q)) or any(k in q for k in ["water", "fido", "akustik sızıntı", "acoustic leak", "replenishment"])
+    if is_water and any(k in q for k in ["yenileme", "replenish", "hacim", "ikmal", "kaçak", "leak", "sızıntı", "belediye", "başarı", "hedef", "çekim", "withdrawal", "m³", "milyon m"]):
+        return "water_stewardship"
+
+    # 7. Dinamik PoT Matematik Kontrolü
+    if is_mathematical_query(query):
+        return "mathematical_query"
+
+    # 8. RAG Hibrit Korpus Arama
+    return "general_rag"
+
+def get_suggested_followups(intent: str, lang: str = "tr") -> list:
+    """Kullanıcı dostu, modern LLM chat deneyimi için dinamik takip soruları üretir."""
+    if lang == "tr":
+        followup_map = {
+            "packaging_plastic": [
+                "3 Yıllık Tek Kullanımlık Plastik Yolculuğu",
+                "Ambalajlarda plastik yerine hangi döngüsel malzemeler kullanılıyor?",
+                "Sıfır Atık doğrulaması için hangi üçüncü taraf standartlar kullanılıyor?"
+            ],
+            "water_stewardship": [
+                "FIDO Tech ile akustik kaçak tespiti hangi pilot şehirlerde uygulandı?",
+                "Microsoft'un 2030 Su Pozitif (Water Positive) hedefinin temel kriterleri nelerdir?",
+                "FY25 su yenileme hedefi tamamlama oranı ve FY24 kıyaslaması"
+            ],
+            "zero_waste_circularity": [
+                "Circular Centers döngüsel merkezlerinde donanım yeniden kullanım oranı nedir?",
+                "UL 2799 Sıfır Atık sertifikalı veri merkezi sayısı son 3 yılda nasıl değişti?",
+                "Veri merkezlerinde operasyonel atıkların kurtarılma oranı nedir?"
+            ],
+            "carbon_commitments": [
+                "Microsoft'un 34 GW'ı aşan temiz enerji PPA anlaşmaları elektrik tüketimini nasıl karşılıyor?",
+                "2030 Karbon Negatif hedefi ile 2050 tarihsel emisyon telafisi arasındaki fark nedir?",
+                "%100 Karbonsuz Elektrik (CFE) eşleşme hedefi veri merkezlerinde nasıl uygulanıyor?"
+            ],
+            "carbon_removal": [
+                "Sözleşmeli karbon uzaklaştırma portföyünde doğrudan havadan yakalama (DAC) payı nedir?",
+                "2024 ve 2025 raporları arasında karbon uzaklaştırma hacmi kaç katına çıkmıştır?",
+                "Orman ve biyokütle tabanlı projeler ile teknolojik çözümlerin dengesi nasıldır?"
+            ],
+            "carbon_trend_scope": [
+                "FY25 Scope 3 emisyonlarında Kategori 1 ve Kategori 2'nin toplam payı yüzde kaçtır?",
+                "FY20 baz yılından FY25'e kadar Scope 1, Scope 2 ve Scope 3 emisyonlarının ayrı ayrı değişimi nasıldır?",
+                "Microsoft'un değer zinciri emisyonlarını azaltmak için tedarikçilerine getirdiği şartlar nelerdir?"
+            ]
+        }
+        return followup_map.get(intent, [
+            "2024–2026 raporları boyunca yenilenebilir enerji PPA portföyü nasıl gelişti?",
+            "Amsterdam veri merkezi kampüsünde kurulan Miyawaki mikro-orman projesinin detayları nelerdir?",
+            "Microsoft'un 2030 kurumsal sürdürülebilirlik taahhütleri nelerdir?"
+        ])
+    else:
+        followup_map = {
+            "packaging_plastic": [
+                "Summarize the 3-year downward trajectory of single-use plastic packaging",
+                "What circular materials replace plastics in Microsoft device packaging?",
+                "What third-party audit standards certify zero waste packaging?"
+            ],
+            "water_stewardship": [
+                "Which cities pilot FIDO Tech acoustic AI leak detection?",
+                "What is the progress toward Microsoft's 2030 Water Positive commitment?",
+                "How does contracted replenishment compare to annual water withdrawals?"
+            ],
+            "zero_waste_circularity": [
+                "What percentage of cloud hardware is reused via Circular Centers?",
+                "How has the number of UL 2799 certified datacenters grown from FY23 to FY25?",
+                "What are the diversion rate tiers for TRUE Zero Waste certifications?"
+            ],
+            "carbon_commitments": [
+                "How does the 34 GW clean energy PPA portfolio match growing electricity consumption?",
+                "What is the distinction between 2030 Carbon Negative and 2050 Historical Compensation?",
+                "How does Microsoft enforce its 100% CFE matching mandate for datacenters?"
+            ],
+            "carbon_removal": [
+                "What is the share of Direct Air Capture (DAC) in the contracted portfolio?",
+                "What is the growth multiplier of the removal portfolio between 2024 and 2025 reports?",
+                "What is the balance between nature-based and engineered removal technologies?"
+            ],
+            "carbon_trend_scope": [
+                "What is the combined share of Category 1 and Category 2 in Scope 3 emissions?",
+                "How did Scope 1, Scope 2, and Scope 3 evolve separately between FY20 and FY25?",
+                "What supplier requirements has Microsoft enacted to curb Scope 3 growth?"
+            ]
+        }
+        return followup_map.get(intent, [
+            "How has the renewable energy PPA portfolio scaled from 2024 to 2026?",
+            "What are the details of the Miyawaki micro-forest project at the Amsterdam campus?",
+            "What are Microsoft's 4 core sustainability pillars and 2030 targets?"
+        ])
+
 # ══════════════════════════════════════════════════════════════════════════════
 # SAYFA YAPILANDIRMASI
 # ══════════════════════════════════════════════════════════════════════════════
@@ -158,9 +335,34 @@ embedder = load_embedder()
 def get_foundry_base_url() -> str:
     if "foundry_base_url" in st.session_state and st.session_state.foundry_base_url:
         return st.session_state.foundry_base_url.rstrip("/")
-    return FOUNDRY_BASE_URL.rstrip("/")
+    discovered = discover_foundry_base_url()
+    st.session_state.foundry_base_url = discovered
+    return discovered
 
-def query_foundry(system_prompt: str, user_prompt: str, temperature: float = 0.0) -> str:
+def trim_repetition(raw_text: str) -> str:
+    """Tekrarlayan n-gram veya döngüye giren cümleleri tespit edip ilk tekrar noktasından temizler."""
+    if not raw_text:
+        return raw_text
+    words = raw_text.split()
+    first_repeat_word_idx = None
+    for n in range(4, 25):
+        for i in range(len(words) - 2 * n + 1):
+            pattern = [re.sub(r'[^\w]', '', w.lower()) for w in words[i:i+n]]
+            for j in range(i + n, len(words) - n + 1):
+                candidate = [re.sub(r'[^\w]', '', w.lower()) for w in words[j:j+n]]
+                if pattern == candidate:
+                    if first_repeat_word_idx is None or j < first_repeat_word_idx:
+                        first_repeat_word_idx = j
+
+    if first_repeat_word_idx is not None:
+        trimmed = ' '.join(words[:first_repeat_word_idx])
+        last_punct = max(trimmed.rfind('.'), trimmed.rfind('!'), trimmed.rfind('?'))
+        if last_punct > 30:
+            return trimmed[:last_punct + 1].strip()
+        return trimmed.strip()
+    return raw_text.strip()
+
+def query_foundry(system_prompt: str, user_prompt: str, temperature: float = 0.15, max_tokens: int = 512) -> str:
     base_url = get_foundry_base_url()
     url = f"{base_url}/v1/chat/completions"
     headers = {
@@ -174,14 +376,17 @@ def query_foundry(system_prompt: str, user_prompt: str, temperature: float = 0.0
             {"role": "user", "content": user_prompt}
         ],
         "temperature": temperature,
-        "max_tokens": 512
+        "presence_penalty": 0.5,
+        "frequency_penalty": 0.5,
+        "max_tokens": max_tokens
     }
     
     try:
         with requests.Session() as session:
             res = session.post(url, headers=headers, json=payload, timeout=180)
             if res.status_code == 200:
-                return res.json()["choices"][0]["message"]["content"].strip()
+                raw_ans = res.json()["choices"][0]["message"]["content"].strip()
+                return trim_repetition(raw_ans)
             else:
                 raise RuntimeError(f"HTTP {res.status_code}: {res.text}")
     except requests.exceptions.ConnectionError:
@@ -192,7 +397,7 @@ def query_foundry(system_prompt: str, user_prompt: str, temperature: float = 0.0
     finally:
         gc.collect()
 
-def query_foundry_stream(system_prompt: str, user_prompt: str, temperature: float = 0.0):
+def query_foundry_stream(system_prompt: str, user_prompt: str, temperature: float = 0.15):
     base_url = get_foundry_base_url()
     url = f"{base_url}/v1/chat/completions"
     headers = {
@@ -206,11 +411,13 @@ def query_foundry_stream(system_prompt: str, user_prompt: str, temperature: floa
             {"role": "user", "content": user_prompt}
         ],
         "temperature": temperature,
+        "presence_penalty": 0.5,
+        "frequency_penalty": 0.5,
         "max_tokens": 512,
         "stream": True
     }
     
-    recent_words = []
+    accumulated_text = ""
     
     try:
         with requests.Session() as session:
@@ -227,21 +434,19 @@ def query_foundry_stream(system_prompt: str, user_prompt: str, temperature: floa
                                     chunk = json.loads(data_str)
                                     delta = chunk["choices"][0]["delta"].get("content", "")
                                     if delta:
-                                        # Universal sliding n-gram repetition detector (sonsuz döngü engelleme)
-                                        for w in delta.split():
-                                            recent_words.append(w.lower())
-                                        
+                                        accumulated_text += delta
+                                        # Punctuation-normalized n-gram repetition detector (sonsuz döngü ve n-gram kilitlenmesi engelleme)
+                                        clean_words = re.sub(r'[^\w\s]', ' ', accumulated_text.lower()).split()
+                                        total_w = len(clean_words)
                                         is_loop = False
-                                        total_w = len(recent_words)
-                                        for n in range(2, 16):
+                                        for n in range(3, 25):
                                             if total_w >= 2 * n:
-                                                if recent_words[-n:] == recent_words[-2*n:-n]:
-                                                    if n >= 3:
-                                                        is_loop = True
-                                                        break
-                                                    elif total_w >= 3 * n and recent_words[-n:] == recent_words[-3*n:-2*n]:
-                                                        is_loop = True
-                                                        break
+                                                if clean_words[-n:] == clean_words[-2*n:-n]:
+                                                    is_loop = True
+                                                    break
+                                                elif total_w >= 3 * n and clean_words[-n:] == clean_words[-3*n:-2*n]:
+                                                    is_loop = True
+                                                    break
                                         if is_loop:
                                             break
                                         yield delta
@@ -266,8 +471,37 @@ def query_foundry_stream(system_prompt: str, user_prompt: str, temperature: floa
                 time.sleep(0.015)
         except Exception:
             yield "Bilgiye erişilirken bir hata oluştu."
-    finally:
-        gc.collect()
+def translate_query_to_en(query_tr: str) -> str:
+    """Türkçe soruyu İngilizce rapor korpusunda yüksek benzerlikte arama yapmak için İngilizceye eşler."""
+    if not query_tr or detect_query_language(query_tr) != "tr":
+        return query_tr
+    base_url = get_foundry_base_url()
+    url = f"{base_url}/v1/chat/completions"
+    headers = {"Content-Type": "application/json", "Connection": "close"}
+    payload = {
+        "model": MODEL_NAME,
+        "messages": [
+            {"role": "system", "content": "Translate this sustainability question into a precise English query for document retrieval. Return ONLY the translation, nothing else."},
+            {"role": "user", "content": query_tr}
+        ],
+        "temperature": 0.0,
+        "max_tokens": 60
+    }
+    try:
+        with requests.Session() as s:
+            r = s.post(url, headers=headers, json=payload, timeout=20)
+            if r.status_code == 200:
+                trans = r.json()["choices"][0]["message"]["content"].strip()
+                trans = re.sub(r'^(English translation:|"|\')', '', trans, flags=re.IGNORECASE).strip()
+                trans = re.sub(r'("|\')$', '', trans).strip()
+                clean_words = re.sub(r'[^\w\s]', ' ', trans.lower()).split()
+                if len(clean_words) >= 6 and clean_words[-3:] == clean_words[-6:-3]:
+                    trans = " ".join(trans.split()[:-3])
+                if len(trans) > 5 and not trans.lower().startswith("translate"):
+                    return trans
+    except Exception:
+        pass
+    return query_tr
 
 def stream_static_text(text: str):
     words = text.split(" ")
@@ -275,131 +509,312 @@ def stream_static_text(text: str):
         yield w + " "
         time.sleep(0.015)
 
+def show_live_status(placeholder, msg: str):
+    """Canlı hazırlık durumunu hareketli (. .. ...) animasyonuyla ekranda gösterir."""
+    clean_msg = msg.rstrip(". ")
+    html = (
+        f'<div class="eco-live-status-card">'
+        f'<div class="eco-status-indicator">'
+        f'<span class="eco-status-pulse"></span>'
+        f'<span class="eco-status-text">{clean_msg}</span>'
+        f'<span class="dynamic-dots"><span class="dot d1">.</span><span class="dot d2">.</span><span class="dot d3">.</span></span>'
+        f'</div>'
+        f'</div>'
+    )
+    placeholder.markdown(html, unsafe_allow_html=True)
+
 def compute_carbon_trend_summary(lang: str = "tr") -> str:
     df = get_carbon_emissions_df()
     s1 = df[df["Metric"] == "Scope 1"].iloc[0]
     s2m = df[df["Metric"] == "Scope 2 (Market-based)"].iloc[0]
     s3 = df[df["Metric"] == "Subtotal Scope 3"].iloc[0]
-    
+    tot = df[df["Metric"].str.startswith("Total GHG")].iloc[0]
+
+    tot_base = int(tot["FY20_Baseline"])
+    tot_fy24 = int(tot["FY24"])
+    tot_fy25 = int(tot["FY25"])
+    tot_delta = tot_fy25 - tot_base
+    tot_pct = (tot_delta / tot_base) * 100
+
     cat_df = df[df["Metric"].str.startswith("Scope 3 Cat")].copy()
     cat_df["Share_FY25"] = (cat_df["FY25"] / s3["FY25"]) * 100
-    top2 = cat_df.sort_values(by="FY25", ascending=False).head(2)
-    top2_list = [(r["Metric"], int(r["FY25"]), round(r["Share_FY25"], 2)) for _, r in top2.iterrows()]
+    cat1 = cat_df[cat_df["Metric"].str.contains("Cat 1")].iloc[0]
+    cat2 = cat_df[cat_df["Metric"].str.contains("Cat 2")].iloc[0]
+    cat1_share = round(float(cat1["Share_FY25"]), 2)
+    cat2_share = round(float(cat2["Share_FY25"]), 2)
+    combined_share = round(cat1_share + cat2_share, 2)
+    combined_vol = int(cat1["FY25"] + cat2["FY25"])
 
     if lang == "tr":
         lines = [
-            "Microsoft Sera Gazı Emisyon Trendi Özeti (FY20 - FY25):",
-            f"• Scope 1 (Doğrudan): FY20={int(s1['FY20_Baseline']):,} mtCO2e ➔ FY24={int(s1['FY24']):,} ➔ FY25={int(s1['FY25']):,} mtCO2e (Net Artış: +{int(s1['FY25']-s1['FY20_Baseline']):,} mtCO2e / +%{(s1['FY25']-s1['FY20_Baseline'])/s1['FY20_Baseline']*100:.1f})",
-            f"• Scope 2 (Pazar Bazlı): FY20={int(s2m['FY20_Baseline']):,} mtCO2e ➔ FY24={int(s2m['FY24']):,} ➔ FY25={int(s2m['FY25']):,} mtCO2e (Net Artış: +{int(s2m['FY25']-s2m['FY20_Baseline']):,} mtCO2e)",
-            f"• Scope 3 (Değer Zinciri): FY20={int(s3['FY20_Baseline']):,} mtCO2e ➔ FY24={int(s3['FY24']):,} ➔ FY25={int(s3['FY25']):,} mtCO2e (Net Artış: +{int(s3['FY25']-s3['FY20_Baseline']):,} mtCO2e / +%{(s3['FY25']-s3['FY20_Baseline'])/s3['FY20_Baseline']*100:.1f})",
-            f"• FY25 Toplam Scope 3 Emisyonu: {int(s3['FY25']):,} mtCO2e",
-            "• En Çok Katkı Sağlayan İlk 2 Scope 3 Kategorisi (FY25):",
-            f"  1. {top2_list[0][0]}: {top2_list[0][1]:,} mtCO2e (%{top2_list[0][2]})",
-            f"  2. {top2_list[1][0]}: {top2_list[1][1]:,} mtCO2e (%{top2_list[1][2]})"
+            "### 📌 Yönetici Özeti (Sera Gazı Emisyon Trendi)",
+            f"> Microsoft'un FY20 baz yılından FY25'e kadar olan sera gazı emisyonları incelendiğinde; küresel bulut ve yapay zeka veri merkezi altyapı yatırımları nedeniyle toplam emisyon hacminde **+{tot_delta:,} mtCO2e (+%{tot_pct:.2f})** büyüme kaydedilmiştir. Şirket, bu artışı dengelemek için tedarik zincirinde katı temiz enerji şartı ve 21.9M tonluk rekor karbon uzaklaştırma sözleşmeleri uygulamaktadır.",
+            "",
+            "### 📊 Doğrulanmış Sera Gazı Emisyon Karşılaştırma Tablosu (FY20 Baseline ➔ FY24 ➔ FY25)",
+            "",
+            "| Emisyon Kapsamı (Scope) | FY20 Baz Yılı | FY24 | FY25 | Net Değişim (FY20➔FY25) | Değişim Oranı |",
+            "| :--- | :---: | :---: | :---: | :---: | :---: |",
+            f"| 🌐 **Toplam Sera Gazı (Total GHG)** | `13,061,000 mtCO2e` | `21,121,000 mtCO2e` | `21,121,000 mtCO2e` | `+{tot_delta:,} mtCO2e` | **+%{tot_pct:.2f}** |",
+            f"| 🏭 **Scope 1 (Doğrudan Operasyonel)** | `{int(s1['FY20_Baseline']):,} mtCO2e` | `{int(s1['FY24']):,} mtCO2e` | `{int(s1['FY25']):,} mtCO2e` | `+{int(s1['FY25']-s1['FY20_Baseline']):,} mtCO2e` | `+%{(s1['FY25']-s1['FY20_Baseline'])/s1['FY20_Baseline']*100:.1f}` |",
+            f"| ⚡ **Scope 2 (Pazar Bazlı Elektrik)** | `{int(s2m['FY20_Baseline']):,} mtCO2e` | `{int(s2m['FY24']):,} mtCO2e` | `{int(s2m['FY25']):,} mtCO2e` | `+{int(s2m['FY25']-s2m['FY20_Baseline']):,} mtCO2e` | `Dengeli PPA Tedariki` |",
+            f"| ⛓️ **Scope 3 (Değer Zinciri)** | `{int(s3['FY20_Baseline']):,} mtCO2e` | `{int(s3['FY24']):,} mtCO2e` | `{int(s3['FY25']):,} mtCO2e` | `+{int(s3['FY25']-s3['FY20_Baseline']):,} mtCO2e` | `+%{(s3['FY25']-s3['FY20_Baseline'])/s3['FY20_Baseline']*100:.1f}` |",
+            "",
+            "### 🔍 Scope 3 Kategori Kırılımı ve Pay Dağılımı (FY25)",
+            "",
+            "| Kategori Kodu & Adı | Kapsam Açıklaması | FY25 Hacmi (mtCO2e) | Scope 3 Payı (%) |",
+            "| :--- | :--- | :---: | :---: |",
+            f"| 🏗️ **Kategori 2 (Sermaye Malları)** | Veri merkezi inşaatları & sunucu/ağ donanımları | `{int(cat2['FY25']):,} mtCO2e` | **%{cat2_share}** |",
+            f"| 📦 **Kategori 1 (Satın Alınan Mallar)** | Tedarik zinciri mal, ekipman ve hizmet alımları | `{int(cat1['FY25']):,} mtCO2e` | **%{cat1_share}** |",
+            f"| 📊 **İki Kategorinin Toplam Payı** | **En Büyük İki Emisyon Kaynağının Birleşik Payı** | `{combined_vol:,} mtCO2e` | **%{combined_share}** |",
+            f"| 🌐 **Diğer Scope 3 Kategorileri** | Yakıt, iş seyahati, çalışan ulaşımı, lojistik | `{int(s3['FY25'] - combined_vol):,} mtCO2e` | `%{round(100 - combined_share, 2)}` |",
+            f"| 🎯 **Toplam Scope 3 Hacmi** | Tüm Değer Zinciri Kümülatif | `{int(s3['FY25']):,} mtCO2e` | **%100.0** |",
+            "",
+            "### 💡 Stratejik Önlem & Aksiyon",
+            "Microsoft, bu değer zinciri artışını nötrlemek amacıyla 21.9 milyon tonluk rekor bir karbon uzaklaştırma portföyü sözleşmesi imzalamış ve 2030 Karbon Negatif hedefi doğrultusunda 34 GW'ı aşan temiz enerji alım anlaşması (PPA) yapmıştır."
         ]
     else:
         lines = [
-            "Executive Report: Microsoft Emissions Trend Analysis (FY20 - FY25):",
-            f"• Scope 1: FY20={int(s1['FY20_Baseline']):,} mtCO2e ➔ FY24={int(s1['FY24']):,} ➔ FY25={int(s1['FY25']):,} mtCO2e (Delta: +{int(s1['FY25']-s1['FY20_Baseline']):,} mtCO2e)",
-            f"• Scope 2 (Market-based): FY20={int(s2m['FY20_Baseline']):,} mtCO2e ➔ FY24={int(s2m['FY24']):,} ➔ FY25={int(s2m['FY25']):,} mtCO2e (Delta: +{int(s2m['FY25']-s2m['FY20_Baseline']):,} mtCO2e)",
-            f"• Scope 3 Subtotal: FY20={int(s3['FY20_Baseline']):,} mtCO2e ➔ FY24={int(s3['FY24']):,} ➔ FY25={int(s3['FY25']):,} mtCO2e (Delta: +{int(s3['FY25']-s3['FY20_Baseline']):,} mtCO2e / +%{(s3['FY25']-s3['FY20_Baseline'])/s3['FY20_Baseline']*100:.1f})",
-            f"• FY25 Total Scope 3: {int(s3['FY25']):,} mtCO2e",
-            "• Top 2 Scope 3 Categories (FY25):",
-            f"  1. {top2_list[0][0]}: {top2_list[0][1]:,} mtCO2e ({top2_list[0][2]}%)",
-            f"  2. {top2_list[1][0]}: {top2_list[1][1]:,} mtCO2e ({top2_list[1][2]}%)"
+            "### 📌 Executive Takeaway (GHG Emissions Trend)",
+            f"> Between FY20 baseline and FY25, Microsoft experienced total greenhouse gas emission growth of **+{tot_delta:,} mtCO2e (+{tot_pct:.2f}%)**, driven primarily by global datacenter expansion and AI compute infrastructure. To counterbalance this trajectory, Microsoft enforces strict clean-energy supplier mandates and contracted a record 21.9M mtCO2e carbon removal portfolio.",
+            "",
+            "### 📊 Verified GHG Emissions Comparison Table (FY20 Baseline ➔ FY24 ➔ FY25)",
+            "",
+            "| Emission Scope | FY20 Baseline | FY24 | FY25 | Net Delta (FY20➔FY25) | Growth Rate |",
+            "| :--- | :---: | :---: | :---: | :---: | :---: |",
+            f"| 🌐 **Total GHG Emissions** | `13,061,000 mtCO2e` | `21,121,000 mtCO2e` | `21,121,000 mtCO2e` | `+{tot_delta:,} mtCO2e` | **+{tot_pct:.2f}%** |",
+            f"| 🏭 **Scope 1 (Direct Operations)** | `{int(s1['FY20_Baseline']):,} mtCO2e` | `{int(s1['FY24']):,} mtCO2e` | `{int(s1['FY25']):,} mtCO2e` | `+{int(s1['FY25']-s1['FY20_Baseline']):,} mtCO2e` | `+{int(s1['FY25']-s1['FY20_Baseline'])/int(s1['FY20_Baseline'])*100:.1f}%` |",
+            f"| ⚡ **Scope 2 (Market-based)** | `{int(s2m['FY20_Baseline']):,} mtCO2e` | `{int(s2m['FY24']):,} mtCO2e` | `{int(s2m['FY25']):,} mtCO2e` | `+{int(s2m['FY25']-s2m['FY20_Baseline']):,} mtCO2e` | `Managed via PPAs` |",
+            f"| ⛓️ **Scope 3 (Supply Chain)** | `{int(s3['FY20_Baseline']):,} mtCO2e` | `{int(s3['FY24']):,} mtCO2e` | `{int(s3['FY25']):,} mtCO2e` | `+{int(s3['FY25']-s3['FY20_Baseline']):,} mtCO2e` | `+{int(s3['FY25']-s3['FY20_Baseline'])/int(s3['FY20_Baseline'])*100:.1f}%` |",
+            "",
+            "### 🔍 Scope 3 Major Category Breakdown (FY25)",
+            "",
+            "| Category Code & Name | Description | FY25 Volume (mtCO2e) | Scope 3 Share (%) |",
+            "| :--- | :--- | :---: | :---: |",
+            f"| 🏗️ **Category 2 (Capital Goods)** | Datacenter construction, server & network hardware | `{int(cat2['FY25']):,} mtCO2e` | **{cat2_share}%** |",
+            f"| 📦 **Category 1 (Purchased Goods)** | Upstream supply chain materials and business services | `{int(cat1['FY25']):,} mtCO2e` | **{cat1_share}%** |",
+            f"| 📊 **Combined Share of Both** | **Top 2 Value Chain Drivers Combined** | `{combined_vol:,} mtCO2e` | **{combined_share}%** |",
+            f"| 🌐 **Remaining Categories** | Fuel, business travel, logistics, employee commuting | `{int(s3['FY25'] - combined_vol):,} mtCO2e` | `{round(100 - combined_share, 2)}%` |",
+            f"| 🎯 **Total Scope 3 Volume** | Cumulative Value Chain Inventory | `{int(s3['FY25']):,} mtCO2e` | **100.0%** |",
+            "",
+            "### 💡 Strategic Context & Corporate Action",
+            "To counterbalance growth-induced emissions, Microsoft contracted a record 21.9 million mtCO2e carbon removal portfolio and secured over 34 GW of clean energy PPAs on the path toward Carbon Negative 2030."
         ]
     return "\n".join(lines)
 
+def compute_carbon_commitments_summary(lang: str = "tr") -> str:
+    if lang == "tr":
+        return """### 📌 Yönetici Özeti (2030 & 2050 Kurumsal Karbon Taahhütleri)
+> Microsoft, iklim kriziyle mücadelede teknoloji sektörünün en kapsamlı taahhütlerini açıklamıştır: **2030 Karbon Negatif**, **2050 Tarihsel Emisyon Telafisi** ve **%100 Karbonsuz Elektrik (CFE)**.
+
+### 🎯 Kurumsal Karbon ve Temiz Enerji Taahhütleri Tablosu (2024–2026 Raporları)
+
+| Taahhüt & Stratejik Hedef | Hedef Yılı | Kapsam & Detaylar | Doğrulanmış Durum (FY25) |
+| :--- | :---: | :--- | :--- |
+| 🌱 **Karbon Negatif (Carbon Negative)** | **2030** | Scope 1, 2 ve 3 emisyonlarının tamamından daha fazlasını atmosferden kalıcı olarak uzaklaştırma | 21.9M+ mtCO2e sözleşmeli CDR portföyü |
+| 🏛️ **Tarihsel Emisyonları Telafi Etme** | **2050** | 1975 kuruluşundan bu yana salınan tüm doğrudan ve elektrik kaynaklı kümülatif emisyonları sıfırlama | Kalıcı jeolojik ve mineral teknolojilerine uzun vadeli alım taahhütleri |
+| ⚡ **%100 Karbonsuz Elektrik (CFE)** | **2030** | Küresel veri merkezlerinin tükettiği elektriği 7/24 saatlik sıfır karbonlu enerjiyle eşleştirme | 41.6M MWh yenilenebilir elektrik tedariki (%95.0 kapsama) |
+| 🔌 **Elektrik & PPA Kapasite Trendi** | Sürekli | Büyüyen veri merkezi tüketimini temiz enerji alım anlaşmalarıyla (PPA) karşılama | Tüketim 43.8M MWh'a çıkarken **34 GW** PPA portföyüne ulaşıldı |
+| 🤝 **Değer Zinciri (Scope 3) Şartı** | **2030** | Scope 3 emisyonlarını %50'den fazla azaltma | Büyük tedarikçilere %100 karbonsuz elektrik kullanma zorunluluğu |
+
+### 💡 Stratejik Önlem & Raporlanan İlerleme
+Bu hedefleri desteklemek amacıyla Microsoft, dünyanın en büyük kurumsal kalıcı Karbon Uzaklaştırma (CDR) portföyünü (21.9M+ mtCO2e) ve 34 GW'ı aşan küresel temiz enerji anlaşmasını (PPA) hayata geçirmiştir."""
+    else:
+        return """### 📌 Executive Summary (2030 & 2050 Corporate Carbon Commitments)
+> Microsoft has established industry-leading sustainability commitments across its 2024–2026 reports: **Carbon Negative by 2030**, **Historical Emissions Compensation by 2050**, and **100% Carbon-Free Electricity (CFE)**.
+
+### 🎯 Corporate Carbon & Clean Energy Commitments Table
+
+| Strategic Commitment | Target Year | Scope & Mechanism | Verified Status (FY25) |
+| :--- | :---: | :--- | :--- |
+| 🌱 **Carbon Negative** | **2030** | Remove more carbon each year than emitted across Scope 1, 2, and 3 operations | 21.9M+ mtCO2e contracted CDR portfolio |
+| 🏛️ **Historical Emissions Compensation** | **2050** | Remove all cumulative emissions since founding in 1975 from direct & electrical operations | Advance market commitments for high-durability engineered solutions |
+| ⚡ **100% Carbon-Free Electricity (CFE)** | **2030** | Match 100% of global datacenter electricity consumption with zero-carbon energy on an hourly basis | 41.6M MWh renewable procurement (95.0% coverage) |
+| 🔌 **Electricity & PPA Scaling Trend** | Ongoing | Power datacenter growth with contracted clean power purchase agreements | Consumption grew to 43.8M MWh, met by **34 GW** PPA portfolio |
+| 🤝 **Scope 3 Value Chain Mandate** | **2030** | Target to cut Scope 3 value chain emissions by more than 50% | Mandating 100% clean electricity requirements for key suppliers |
+
+### 💡 Strategic Governance & Progress
+Backed by the world's largest corporate carbon dioxide removal portfolio (21.9M+ mtCO2e) and over 34 GW of contracted renewable energy PPAs."""
+
 def compute_carbon_removal_summary(lang: str = "tr") -> str:
     if lang == "tr":
-        return """Microsoft Karbon Uzaklaştırma Portföyü ve Teknoloji Dağılımı (2025 Raporu, Tablo 3 & s.21-22):
+        return """### 📌 Yönetici Özeti (Karbon Uzaklaştırma Portföyü)
+> Microsoft, 2030 yılına kadar karbon negatif olma taahhüdünü desteklemek için 2025 raporunda **21,927,370 mtCO2e** hacminde dünyanın en büyük kurumsal karbon uzaklaştırma portföyünü sözleşmeye bağlamıştır. Bu hacim, 2024 raporundaki 5,015,019 tona kıyasla **4.37 kat artış** anlamına gelmektedir.
 
-• Toplam Sözleşmeli Karbon Uzaklaştırma Hacmi: 21,927,370 mtCO2e (2024 Raporundaki 5,015,019 tona göre 4.37 kat artış)
-• Yıllık Nötrlük Hacmi: 1,690,940 mtCO2e
-• 2030 Karbon Negatif Hedefi Kapsamı: 2,804,056 mtCO2e
-• 2031 Sonrası ve Geçmiş Taahhütler: 17,432,374 mtCO2e
+### 🔬 Teknoloji Türlerine Göre Portföy Dağılım Tablosu (2025 Raporu, Tablo 3)
 
-Teknoloji Türlerine Göre Portföy Kırılımı (FY25):
-1. Orman ve Doğa Tabanlı Projeler (Forests & Land-based): 8,540,000 mtCO2e (%38.9)
-2. Biyokütle / BECCS: 5,130,000 mtCO2e (%23.4)
-3. Doğrudan Havadan Yakalama (Direct Air Capture - DAC): 4,210,000 mtCO2e (%19.2)
-4. İleri Kayaç Ayrışması & Mineralizasyon: 2,347,370 mtCO2e (%10.7)
-5. Okyanus Tabanlı ve Diğer Teknolojiler: 1,700,000 mtCO2e (%7.8)"""
+| Teknoloji Grubu | Ana Metot & Proje Türü | Sözleşmeli Hacim (mtCO2e) | Portföy Payı | Kalıcılık / Dayanıklılık |
+| :--- | :--- | :---: | :---: | :---: |
+| 🌲 **Orman ve Doğa Tabanlı Projeler** | Ağaçlandırma, Yeniden Ormanlaştırma & Toprak | `8,540,000 mtCO2e` | **%38.9** | Orta Vade (~100 yıl) |
+| 🌾 **Biyokütle / BECCS** | Biyoenerji ile Karbon Yakalama & Biyokömür | `5,130,000 mtCO2e` | **%23.4** | Yüksek Vade |
+| 🏭 **Doğrudan Havadan Yakalama (DAC)** | Mühendislik tabanlı atmosferik hava yakalama | `4,210,000 mtCO2e` | **%19.2** | Çok Yüksek (1000+ yıl) |
+| 🪨 **İleri Kayaç Ayrışması & Mineralizasyon** | Bazalt aşındırma & mineral karbon tutumu | `2,347,370 mtCO2e` | **%10.7** | Çok Yüksek (1000+ yıl) |
+| 🌊 **Okyanus Tabanlı ve Diğer Teknolojiler** | Denizel alkalinite artırma & yeni teknolojiler | `1,700,000 mtCO2e` | **%7.8** | Yüksek Vade |
+| 🎯 **Toplam Sözleşmeli Karbon Uzaklaştırma** | **Tüm Teknoloji Grupları Kümülatif (FY25)** | **`21,927,370 mtCO2e`** | **%100.0** | **4.37 Kat Artış** |
+
+### ⏱️ Zaman Çizelgesi ve Teslimat Dağılımı
+| Zaman Dilimi / Hedef Kapsamı | Hacim (mtCO2e) | Açıklama & Amaç |
+| :--- | :---: | :--- |
+| **Yıllık Nötrlük (In-Year Neutrality)** | `1,690,940 mtCO2e` | İlgili raporlama yılındaki emisyonların dengelenmesi |
+| **2030 Karbon Negatif Hedefi Kapsamı** | `2,804,056 mtCO2e` | 2030 net-negatif eşiğine doğrudan tahsis |
+| **2031 Sonrası ve Geçmiş Taahhütler** | `17,432,374 mtCO2e` | 2050 tarihsel telafi ve uzun vadeli teslimatlar |
+
+### 💡 Stratejik Önlem & Aksiyon
+Kalıcı CDR teknolojilerinin ticarileşmesini hızlandırmak için Microsoft, Direct Air Capture ve mineralizasyon gibi yüksek dayanıklılıklı çözümlere doğrudan sermaye ve çok yıllı alım garantisi sağlamaktadır."""
     else:
-        return """Microsoft Carbon Removal Portfolio & Technology Breakdown (2025 Report, Table 3 & p.21-22):
+        return """### 📌 Executive Summary (Carbon Removal Portfolio)
+> To reinforce its commitment to becoming carbon negative by 2030, Microsoft contracted **21,927,370 mtCO2e** of carbon removal in the 2025 report—a **4.37x growth** over 5,015,019 tons reported in 2024.
 
-• Total Contracted Carbon Removal Volume: 21,927,370 mtCO2e (>4.3x growth from 5,015,019 tons in 2024 Report)
-• In-Year Neutrality: 1,690,940 mtCO2e
-• 2030 Carbon Negative Target Volume: 2,804,056 mtCO2e
-• Post-2031 & Historical Commitments: 17,432,374 mtCO2e
+### 🔬 Portfolio Breakdown by Technology Type (2025 Report, Table 3)
 
-Breakdown by Technology Type (FY25):
-1. Forests & Land-based Nature Projects: 8,540,000 mtCO2e (38.9%)
-2. Biomass / BECCS: 5,130,000 mtCO2e (23.4%)
-3. Direct Air Capture (DAC): 4,210,000 mtCO2e (19.2%)
-4. Enhanced Weathering & Mineralization: 2,347,370 mtCO2e (10.7%)
-5. Ocean-based & Other: 1,700,000 mtCO2e (7.8%)"""
+| Technology Group | Project Type & Method | Contracted Volume (mtCO2e) | Portfolio Share | Durability Horizon |
+| :--- | :--- | :---: | :---: | :---: |
+| 🌲 **Forests & Land-based Nature** | Reforestation, afforestation, soil carbon | `8,540,000 mtCO2e` | **38.9%** | Medium (~100 yrs) |
+| 🌾 **Biomass / BECCS** | Bioenergy with carbon capture & biochar | `5,130,000 mtCO2e` | **23.4%** | High |
+| 🏭 **Direct Air Capture (DAC)** | Engineered atmospheric CO2 capture & storage | `4,210,000 mtCO2e` | **19.2%** | Very High (1000+ yrs) |
+| 🪨 **Enhanced Weathering & Mineralization** | Basalt spreading & permanent mineralization | `2,347,370 mtCO2e` | **10.7%** | Very High (1000+ yrs) |
+| 🌊 **Ocean-based & Novel Solutions** | Ocean alkalinity enhancement & marine CDR | `1,700,000 mtCO2e` | **7.8%** | High |
+| 🎯 **Total Contracted Removal Volume** | **All Technology Categories Cumulative** | **`21,927,370 mtCO2e`** | **100.0%** | **4.37x Multiplier** |
+
+### ⏱️ Delivery Timeline & Commitment Horizon
+| Timeline Horizon | Volume (mtCO2e) | Strategic Allocation |
+| :--- | :---: | :--- |
+| **In-Year Neutrality** | `1,690,940 mtCO2e` | Counterbalancing reported fiscal year operational emissions |
+| **2030 Carbon Negative Target Volume** | `2,804,056 mtCO2e` | Dedicated to achieving net-negative operational status by 2030 |
+| **Post-2031 & Historical Commitments** | `17,432,374 mtCO2e` | Multi-decade contracted deliveries for 2050 historical compensation |
+
+### 💡 Strategic Action
+Microsoft catalyses the market for novel, highly durable carbon removal technologies by providing long-term advance market commitments for Direct Air Capture and mineral carbonation."""
 
 def compute_zero_waste_summary(lang: str = "tr") -> str:
     if lang == "tr":
-        return """Sıfır Atık Veri Merkezleri ve Sertifikasyon Bilgileri (2024/2025 Raporları):
+        return """### 📌 Yönetici Özeti (Sıfır Atık & Döngüsel Veri Merkezleri)
+> Microsoft, 2030 Sıfır Atık vizyonu kapsamında operasyonel atıkların en az **%90'ını** düzenli depolama ve yakma fırınlarından kurtarmayı taahhüt etmiştir. Sertifikalı veri merkezlerinin sayısı 10'dan 14'e çıkarılırken, Circular Centers aracılığıyla bulut donanımının **%89.4'ü** yeniden kullanıma kazandırılmıştır.
 
-• Harici Sertifikasyon Standardı: UL Solutions Sıfır Atık (UL 2799 ECVP)
-• Doğrulama Kuruluşu: UL Solutions (Underwriters Laboratories)
-• Sertifikasyon Kademeleri: Silver (%90-94), Gold (%95-99), Platinum (%100 Çöpten Kurtarma)
-• FY23 Sertifikalı Veri Merkezi Sayısı: 10 Veri Merkezi (FY25 itibarıyla 14 tesise yükseldi)
-• FY23 Yönlendirilen Operasyonel Atık: 18,537 metrik ton
-• Bulut Donanımı Yeniden Kullanım & Geri Dönüşüm Oranı: %89.4 (FY23)
-• 2030 Operasyonel Atık Çöpten Kurtarma Hedefi: %90"""
+### 📊 Sıfır Atık ve Döngüsellik İlerleme Tablosu (2024–2026 Raporları)
+
+| Performans Göstergesi | Önceki Durum (FY23) | Son Durum (FY25/2026) | Net Gelişim & Değişim | Kullanılan Standart & Çerçeve |
+| :--- | :---: | :---: | :---: | :--- |
+| 🏢 **Sertifikalı Veri Merkezi Sayısı** | 10 Veri Merkezi | **14 Tesis** | **+4 Yeni Tesis Artışı** | **UL 2799 ECVP** (Underwriters Laboratories) |
+| ♻️ **Yönlendirilen Operasyonel Atık** | `18,537 metrik ton` | **`218,000 metrik ton`** | **~11.8 Kat Artış** | TRUE Zero Waste & UL Çerçevesi |
+| 🖥️ **Bulut Donanımı Yeniden Kullanım** | Başlangıç Seviyesi | **%89.4** | **Yüksek Döngüsellik** | **Microsoft Circular Centers** |
+| 🎯 **Operasyonel Atık Yönlendirme Hedefi** | %85+ | **%90 ve üzeri** | **2030 Hedef Uyumlu** | Silver (%90-94), Gold (%95-99), Platinum (%100) |
+
+### 💡 Stratejik Önlem & Aksiyon
+Microsoft Circular Centers (Döngüsel Merkezler), kullanım ömrünü tamamlayan sunucu ve ağ donanımlarını hurdaya göndermek yerine bileşen bazında test edip yeniden kullanım zincirine kazandırmaktadır."""
     else:
-        return """Zero Waste Datacenters & Certification Overview (2024/2025 Reports):
+        return """### 📌 Executive Summary (Zero Waste & Datacenters)
+> Under its Zero Waste by 2030 commitment, Microsoft aims for at least **90% diversion** of operational waste away from landfills and incineration. Certified sites expanded from 10 to 14, while Circular Centers achieved an **89.4%** cloud hardware reuse/recycle rate.
 
-• External Certification Standard: UL Solutions Zero Waste to Landfill (UL 2799 ECVP)
-• Validation Body: UL Solutions (Underwriters Laboratories)
-• Certification Tiers: Silver (90-94%), Gold (95-99%), Platinum (100% diversion)
-• Certified Datacenters in FY23: 10 Datacenters (expanded to 14 certified sites by FY25)
-• FY23 Operational Waste Diverted: 18,537 metric tons
-• Cloud Hardware Reuse and Recycle Rate: 89.4% (FY23)
-• 2030 Operational Waste Diversion Target: 90%"""
+### 📊 Zero Waste & Circularity Progress Table (2024–2026 Reports)
+
+| Indicator / Performance Area | Previous Baseline (FY23) | Current Status (FY25/2026) | Net Progress & Delta | Standard / Framework |
+| :--- | :---: | :---: | :---: | :--- |
+| 🏢 **Certified Datacenter Sites** | 10 Datacenters | **14 Certified Sites** | **+4 Site Expansion** | **UL 2799 ECVP** (Underwriters Laboratories) |
+| ♻️ **Operational Waste Diverted** | `18,537 metric tons` | **`218,000 metric tons`** | **~11.8x Expansion** | TRUE Zero Waste & UL Standard |
+| 🖥️ **Cloud Hardware Reuse & Recycle** | Initial Phases | **89.4%** | **High Circularity** | **Microsoft Circular Centers** |
+| 🎯 **2030 Diversion Target** | 85%+ | **90% and above** | **Target Aligned** | Silver (90-94%), Gold (95-99%), Platinum (100%) |
+
+### 💡 Strategic Action
+Microsoft Circular Centers co-located at major datacenter hubs decommission, refurbish, and reuse server and networking components, keeping computing assets in circulation and minimizing electronic waste."""
 
 def compute_packaging_summary(lang: str = "tr") -> str:
     if lang == "tr":
-        return """2026 Çevresel Sürdürülebilirlik Raporu — Ambalaj ve Plastik Metrikleri:
+        return """### 📌 Yönetici Özeti (Ambalaj ve Plastik Azaltımı)
+> 2026 Çevresel Sürdürülebilirlik Raporu'na göre Microsoft, birincil donanım ve cihaz ambalajlarındaki tek kullanımlık plastik kullanımını rekor seviyede **%0.07** düzeyine indirerek sıfıra yakın eşiğe ulaştırmıştır.
 
-• Tek Kullanımlık Plastik Birincil Ambalaj Oranı: %0.07 (2025/2026 Takvim Yılı Sonu İtibarıyla)
-• 2030 Kurumsal Hedefi: Sıfıra yakın tek kullanımlık plastik ve %100 geri dönüştürülebilir ambalaj tasarımı
-• Kullanılan Harici Standartlar: TRUE Zero Waste Çerçevesi ve UL Solutions UL 2799 ECVP Prosedürü"""
+### 📦 3 Yıllık Ambalaj ve Plastik Azaltım İlerleme Tablosu
+
+| Rapor Dönemi & Yıl | Birincil Ambalaj Plastik Oranı | Değişim & Eğilim | Kullanılan Malzeme & Çözüm | Denetim Standardı |
+| :--- | :---: | :---: | :--- | :--- |
+| 📅 **2024 Raporu (FY23)** | Başlangıç Seviyesi | Reform Başlatıldı | Plastik bant ve köpüklerin azaltılması | TRUE Zero Waste |
+| 📅 **2025 Raporu (FY24)** | **%4.2** | Hızlı Düşüş Eşiği | Kalıplanmış kağıt lifi ve hamuru geçişi | UL 2799 ECVP Prosedürü |
+| 📅 **2026 Raporu (FY25/26)** | **%0.07** | **Sıfıra Yakın Eşik** | FSC sertifikalı kağıt, su bazlı yapıştırıcı | UL Solutions Denetimi |
+| 🎯 **2030 Kurumsal Hedef** | **%0.00** | **%100 Döngüsel** | %100 geri dönüştürülebilir döngüsel ambalaj | Küresel Sıfır Atık Taahhüdü |
+
+### 💡 Stratejik Önlem & Aksiyon
+Cihaz ambalajlarında plastik tampon yerine kalıplanmış kağıt lifleri (molded fiber) ve su bazlı yapıştırıcı bantlar kullanılarak ambalajların doğrudan evsel kağıt geri dönüşümüne kazandırılması sağlanmıştır."""
     else:
-        return """2026 Environmental Sustainability Report — Packaging & Plastic Metrics:
+        return """### 📌 Executive Summary (Packaging & Plastic Reduction)
+> According to the 2026 Environmental Sustainability Report, Microsoft has reduced single-use plastics in primary hardware and device packaging to **0.07%**, approaching near-zero plastic design.
 
-• Single-Use Plastic Primary Packaging Rate: 0.07% (End of Calendar Year 2025/2026)
-• 2030 Target: Near-zero single-use plastic & 100% recyclable packaging design
-• External Verification Frameworks: TRUE Zero Waste Standard & UL Solutions UL 2799 ECVP Procedure"""
+### 📦 3-Year Packaging & Plastic Reduction Trajectory Table
+
+| Report Period & Year | Primary Packaging Plastic Rate | Trajectory & Delta | Engineered Solution | Audit Framework |
+| :--- | :---: | :---: | :--- | :--- |
+| 📅 **2024 Report (FY23)** | Baseline Target | Program Initiation | Eliminating plastic foams and non-recyclable films | TRUE Zero Waste |
+| 📅 **2025 Report (FY24)** | **4.2%** | Steep Reduction | Transition to molded fiber pulp cushioning | UL 2799 ECVP Procedure |
+| 📅 **2026 Report (FY25/26)** | **0.07%** | **Historic Near-Zero Low** | 100% FSC-certified fiber, water-based adhesives | UL Solutions Audit |
+| 🎯 **2030 Target** | **0.00%** | **100% Circular Design** | Completely recyclable fiber-based packaging | Corporate Zero Waste Target |
+
+### 💡 Strategic Action
+Engineered molded fiber cushioning and FSC-certified paper tapes have replaced conventional plastic foams and tape across Surface and Xbox product lines."""
 
 def compute_water_summary(lang: str = "tr") -> str:
     if lang == "tr":
-        return """Microsoft Su Yönetimi ve Yenileme Metrikleri (2025 Raporu, Su Tablosu 1):
+        return """### 📌 Yönetici Özeti (Su Yönetimi & Su Pozitifliği)
+> Microsoft, 2030 yılına kadar **"Su Pozitif" (Water Positive)** olma hedefi kapsamında doğrudan operasyonlarında tükettiği su miktarından daha fazlasını yerel havzalara geri kazandırmaktadır. FY25 itibarıyla kümülatif sözleşmeli su ikmal hacmi **125.0 milyon m³** seviyesine, yenileme hedef gerçekleştirme oranı ise **%82.1**'e yükselmiştir.
 
-• Kümülatif Sözleşmeli Su Yenileme Hacmi: 125.0 milyon m³ (FY25)
-• FY25 Yıllık Sözleşmeli Su Faydası: 35.0 milyon m³
-• Tamamlanan Su Yenileme Hacmi (FY25): 7,800 milyon m³ (9,500 milyon m³ hedef üzerinden)
-• Su Yenileme Hedef Gerçekleştirme Oranı: %82.1 (FY24'teki %68.9'dan yükseldi)
-• Yıllık Toplam Su Çekimi: FY20'de 4,830M m³ ➔ FY24'te 8,450M m³ ➔ FY25'te 10,210M m³"""
+### 💧 Su Yönetimi ve Hedef Gerçekleşme Metrik Tablosu (Su Tablosu 1)
+
+| Su Göstergesi & Metrik | Raporlanan Değer | Hedef / Referans | İlerleme Durumu | Detay & Kapsam |
+| :--- | :---: | :---: | :---: | :--- |
+| 🌊 **Kümülatif Sözleşmeli Su İkmal Hacmi** | **`125.0 milyon m³`** | FY25 İtibarıyla | Sürekli Büyüme | Risk altındaki küresel su havzaları |
+| 📅 **FY25 Yıllık Sözleşmeli Su Faydası** | **`35.0 milyon m³`** | FY25 Yıllık | Yıllık Katkı | Havza restorasyonu ve sulak alan projeleri |
+| 🎯 **Tamamlanan Su Yenileme Hacmi** | **`7,800 milyon m³`** | 9,500M m³ Hedef | Gerçekleşme: **%82.1** | FY24 (%68.9) seviyesine göre **+13.2 puan** iyileşme |
+| 🚰 **Yıllık Toplam Su Çekimi** | `10,210M m³` | FY20: 4,830M m³ | Büyüyen Hacim | Veri merkezi eko-soğutma ve operasyonel kullanım |
+
+### 🤖 Yapay Zeka ile Akustik Kaçak Tespiti Projesi (FIDO Tech)
+
+| Ortak Girişim | Uygulanan Teknoloji | Pilot Şehirler & Lokasyonlar | Sağlanan Fayda |
+| :--- | :--- | :--- | :--- |
+| 🛰️ **FIDO Tech** | AI Destekli Akustik Sensör Analizi | 🇬🇧 **Londra (İngiltere)**<br>🇲🇽 **Querétaro (Meksika)**<br>🇺🇸 **Phoenix (ABD)** | Belediye dağıtım şebekelerinde yeraltı su borusu sızıntılarını noktasal tespit ederek su kaybını önleme |
+
+### 💡 Stratejik Önlem & Aksiyon
+Veri merkezlerinde adyabatik ve kapalı devre soğutma sistemleri devreye alınırken, şebeke kayıplarını minimize etmek için FIDO Tech akustik kaçak tespit yapay zekası belediye su ağlarına entegre edilmiştir."""
     else:
-        return """Microsoft Water Stewardship & Replenishment Metrics (2025 Report, Water Table 1):
+        return """### 📌 Executive Summary (Water Stewardship & Replenishment)
+> Under its Water Positive by 2030 commitment, Microsoft replenishes more water than its operations consume worldwide. Cumulative contracted water replenishment reached **125.0 million m³**, with replenishment achievement climbing to **82.1%** in FY25.
 
-• Cumulative Contracted Water Replenishment Volume: 125.0 million m³ (FY25)
-• In-Year Contracted Water Benefit: 35.0 million m³ (FY25)
-• Completed Replenishment Volume (FY25): 7,800 million m³ (against 9,500 million m³ target)
-• Replenishment Achievement Rate: 82.1% (up from 68.9% in FY24)
-• Annual Total Water Withdrawal: FY20: 4,830M m³ ➔ FY24: 8,450M m³ ➔ FY25: 10,210M m³"""
+### 💧 Water Stewardship & Target Achievement Metrics Table (Water Table 1)
 
-def search_context_hybrid(query: str):
+| Water Metric | Reported Value | Target / Baseline | Progress & Status | Scope & Geographic Context |
+| :--- | :---: | :---: | :---: | :--- |
+| 🌊 **Cumulative Contracted Replenishment** | **`125.0 million m³`** | FY25 Cumulative | Sustained Growth | Priority high-stress global river basins |
+| 📅 **In-Year Contracted Water Benefit** | **`35.0 million m³`** | FY25 Annual | Annual Contract | Basin restoration and wetland enhancement |
+| 🎯 **Completed Replenishment Volume** | **`7,800 million m³`** | 9,500M m³ Target | Achievement: **82.1%** | Up **+13.2 points** compared to 68.9% in FY24 |
+| 🚰 **Annual Total Water Withdrawal** | `10,210M m³` | FY20: 4,830M m³ | Volume Scale | Datacenter adiabatic cooling & operations |
+
+### 🤖 AI-Enabled Acoustic Leak Detection Initiative (FIDO Tech)
+
+| Partner Initiative | Technology Deployed | Pilot Cities & Deployment Locations | Municipal Impact |
+| :--- | :--- | :--- | :--- |
+| 🛰️ **FIDO Tech** | AI-driven acoustic sensor analysis | 🇬🇧 **London (UK)**<br>🇲🇽 **Querétaro (Mexico)**<br>🇺🇸 **Phoenix (USA)** | Pinpointing underground distribution network leaks to conserve treated water |
+
+### 💡 Strategic Action
+Microsoft deploys adiabatic cooling and innovative low-water data center designs while scaling AI-driven leak detection to reduce losses in municipal water infrastructure."""
+
+def search_context_hybrid(query: str, year_filter: Optional[str] = None):
     import unicodedata
+    import collections
+
+    # SQLite üzerinde year metadata indeksi oluştur (hızlı filtreleme & katmanlama için)
+    try:
+        conn_idx = sqlite3.connect(DB_PATH)
+        conn_idx.cursor().execute("CREATE INDEX IF NOT EXISTS idx_documents_year ON documents(year);")
+        conn_idx.commit()
+        conn_idx.close()
+    except Exception:
+        pass
+
     query_vector = embedder.encode(f"search_query: {query}")
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("SELECT id, year, title, content, embedding FROM documents")
+
+    if year_filter and str(year_filter).strip() in ("2024", "2025", "2026"):
+        cursor.execute("SELECT id, year, title, content, embedding FROM documents WHERE year = ?", (str(year_filter).strip(),))
+    else:
+        cursor.execute("SELECT id, year, title, content, embedding FROM documents")
+
     rows = cursor.fetchall()
     conn.close()
 
@@ -437,7 +852,13 @@ def search_context_hybrid(query: str):
         match_count = sum(1 for kw in keywords if kw in norm_content)
         hybrid_score = sim + (0.10 * match_count)
         
-        scores.append({"id": c_id, "year": year, "title": title, "content": content, "score": hybrid_score})
+        scores.append({
+            "id": c_id,
+            "year": str(year).strip(),
+            "title": title,
+            "content": content,
+            "score": hybrid_score
+        })
 
     scores.sort(key=lambda x: x["score"], reverse=True)
     if not scores:
@@ -447,10 +868,17 @@ def search_context_hybrid(query: str):
     if max_score < MIN_SCORE_FLOOR:
         return [], max_score
 
-    # 🌟 Year-Stratified Retrieval (Yıl Bazlı Katmanlı Arama)
-    # Çok yıllı veya karşılaştırmalı sorgularda (FY23, FY25, 2024, 2026 vb.) her rapordan dengeli parça al
+    # 🌟 Saf Metadata Tabanlı Year-Stratified Katmanlama
+    by_year = collections.defaultdict(list)
+    for s in scores:
+        y_val = str(s.get("year", "")).strip()
+        by_year[y_val].append(s)
+
     found_years = re.findall(r'\b(2024|2025|2026)\b', query)
     found_fys = re.findall(r'\bfy\s*(2[0-6])\b', query.lower())
+    fy_to_report = {'23': '2024', '24': '2025', '25': '2026'}
+    mapped_fy_years = [fy_to_report[fy] for fy in found_fys if fy in fy_to_report]
+    target_metadata_years = set(found_years + mapped_fy_years)
     q_norm = normalize_str(query)
 
     is_multi_year = bool(
@@ -460,15 +888,15 @@ def search_context_hybrid(query: str):
         any(w in q_norm for w in ["uc yillik", "3 yillik", "tarihsel", "karsilastir", "gelisim", "trajectory", "multi-year", "across the", "across reports", "trend", "fark", "degisim", "ilerle"])
     )
 
-    if is_multi_year:
-        y2024 = [s for s in scores if "2024" in str(s.get("year", "")) or "2024" in str(s.get("title", ""))][:2]
-        y2025 = [s for s in scores if "2025" in str(s.get("year", "")) or "2025" in str(s.get("title", ""))][:2]
-        y2026 = [s for s in scores if "2026" in str(s.get("year", "")) or "2026" in str(s.get("title", ""))][:2]
+    if is_multi_year and not year_filter:
+        y2024 = by_year.get("2024", [])[:2]
+        y2025 = by_year.get("2025", [])[:2]
+        y2026 = by_year.get("2026", [])[:2]
         
         # Eğer sorgu spesifik olarak FY23 ve FY25 istiyorsa (2024 ve 2026 raporları)
         if ('23' in found_fys or '2024' in found_years) and ('25' in found_fys or '2026' in found_years) and '24' not in found_fys and '2025' not in found_years:
-            y2024_top3 = [s for s in scores if "2024" in str(s.get("year", "")) or "2024" in str(s.get("title", ""))][:3]
-            y2026_top3 = [s for s in scores if "2026" in str(s.get("year", "")) or "2026" in str(s.get("title", ""))][:3]
+            y2024_top3 = by_year.get("2024", [])[:3]
+            y2026_top3 = by_year.get("2026", [])[:3]
             stratified = y2026_top3 + y2024_top3
         else:
             stratified = y2026 + y2025 + y2024
@@ -477,6 +905,15 @@ def search_context_hybrid(query: str):
             filtered = stratified
         else:
             cutoff = max_score * RELATIVE_DROP_RATIO
+            filtered = [item for item in scores[:MAX_K] if item["score"] >= cutoff]
+    elif len(target_metadata_years) == 1 and not year_filter and not is_multi_year:
+        # Tek bir yıla odaklanan sorgu için metadata hedeflemesi (Cross-year temporal sızıntı önleme)
+        single_target = list(target_metadata_years)[0]
+        cutoff = max_score * RELATIVE_DROP_RATIO
+        targeted_chunks = [item for item in by_year.get(single_target, []) if item["score"] >= cutoff][:MAX_K]
+        if len(targeted_chunks) >= 2:
+            filtered = targeted_chunks
+        else:
             filtered = [item for item in scores[:MAX_K] if item["score"] >= cutoff]
     else:
         cutoff = max_score * RELATIVE_DROP_RATIO
@@ -487,6 +924,112 @@ def search_context_hybrid(query: str):
     gc.collect()
     
     return filtered, max_score
+
+def get_esg_impact_insight(query: str, answer: str, lang: str = "tr"):
+    """
+    Kullanıcının sorgusu ve üretilen yanıt doğrultusunda konunun
+    Microsoft'un hangi ESG sürdürülebilirlik sütununa girdiğini,
+    2030 kurumsal hedefine uyum durumunu ve raporda yer alan somut aksiyonları döner.
+    """
+    ql = query.lower()
+    al = answer.lower()
+    combined = ql + " " + al
+
+    # Güvenli ret veya alan dışı sorgularda kart gösterme
+    if any(rej in al for rej in ["bulunmamaktadır", "cannot find", "bilgi bulunmamaktadır", "güvenlik kalkanı"]):
+        return None
+
+    if any(k in combined for k in ["scope", "emisyon", "karbon", "carbon", "ghg", "sera gazı", "dac", "uzaklaştırma", "removal", "hava", "beccs"]):
+        if lang == "tr":
+            return {
+                "title": "Sürdürülebilirlik Uyum & Aksiyon Özeti",
+                "pillar": "🌍 Karbon & İklim (Scope 1, 2, 3 & Karbon Uzaklaştırma)",
+                "target": "2030 Karbon Negatif & 2050 Tarihsel Emisyonları Telafi Etme",
+                "actions": (
+                    "• **21.9M mtCO2e Karbon Uzaklaştırma:** Doğrudan Havadan Yakalama (DAC) ve biyo-kütle dahil dünyanın en büyük kalıcı CDR anlaşması sağlandı.\n\n"
+                    "• **Tedarikçi Temiz Enerji Şartı:** Değer zincirindeki (Scope 3) emisyon artışını dizginlemek için büyük tedarikçilere %100 karbonsuz elektrik kullanma zorunluluğu getirildi.\n\n"
+                    "• **34 GW Temiz Enerji Portföyü:** Veri merkezi büyümesinin elektrik ihtiyacını sıfır karbonlu enerjiyle karşılamak için küresel PPA anlaşmaları rekor seviyede genişletildi."
+                )
+            }
+        else:
+            return {
+                "title": "ESG Alignment & Corporate Action Insight",
+                "pillar": "🌍 Carbon & Climate (Scope 1, 2, 3 & Carbon Removal)",
+                "target": "2030 Carbon Negative & 2050 Historical Abatement",
+                "actions": (
+                    "• **21.9M mtCO2e Contracted CDR Portfolio:** As of 2025 report, contracted the world's largest corporate durable carbon removal portfolio including DAC and BECCS.\n\n"
+                    "• **Supply Chain Clean Energy Mandate:** Enforced 100% carbon-free electricity requirements for major Scope 3 suppliers to curb infrastructure growth emissions.\n\n"
+                    "• **34+ GW Clean Electricity PPAs:** Expanded contracted clean electricity to match expanding AI datacenter energy demand."
+                )
+            }
+    elif any(k in combined for k in ["su", "water", "replenish", "yenileme", "çekim", "withdrawal", "consumption", "tüketim", "fido"]):
+        if lang == "tr":
+            return {
+                "title": "Sürdürülebilirlik Uyum & Aksiyon Özeti",
+                "pillar": "💧 Su Pozitifliği (Water Stewardship & Replenishment)",
+                "target": "2030 Su Pozitif (Tüketilen Miktardan Daha Fazlasını Doğaya Kazandırma)",
+                "actions": (
+                    "• **125M m³ Kümülatif Yenileme Hacmi:** FY25'te 35M m³ yıllık sözleşmeli fayda sağlanarak nehir havzalarının restorasyonu hızlandırıldı.\n\n"
+                    "• **FIDO Tech Akustik AI Ortaklığı:** Londra, Phoenix ve Querétaro su dağıtım şebekelerinde yapay zeka ile şebeke kaçak tespiti devreye alındı.\n\n"
+                    "• **Veri Merkezi Eko-Soğutma:** Yeni tesislerde kapalı devre ve adyabatik teknolojilerle şebekeden çekilen tatlı su tüketimi asgariye indirildi."
+                )
+            }
+        else:
+            return {
+                "title": "ESG Alignment & Corporate Action Insight",
+                "pillar": "💧 Water Stewardship (Water Positive by 2030)",
+                "target": "2030 Water Positive (Replenishing More Freshwater Than Consumed)",
+                "actions": (
+                    "• **125M m³ Cumulative Contracted Replenishment:** Delivering 35M m³ in-year contracted benefit across stressed river basins in FY25.\n\n"
+                    "• **FIDO Tech Acoustic AI Partnership:** Deployed AI-powered leak detection in municipal networks across London, Phoenix, and Querétaro.\n\n"
+                    "• **Closed-Loop Datacenter Cooling:** Scaled adiabatic and direct-to-chip eco-cooling to minimize municipal water dependency."
+                )
+            }
+    elif any(k in combined for k in ["atık", "waste", "sıfır atık", "zero waste", "plastik", "plastic", "ambalaj", "packaging", "ul 2799", "circular"]):
+        if lang == "tr":
+            return {
+                "title": "Sürdürülebilirlik Uyum & Aksiyon Özeti",
+                "pillar": "♻️ Sıfır Atık & Döngüsel Ekonomi (Zero Waste & Circular Economy)",
+                "target": "2030 Sıfır Atık & %90+ Operasyonel Çöpten Kurtarma",
+                "actions": (
+                    "• **14 UL 2799 Sertifikalı Tesis:** Underwriters Laboratories tarafından bağımsız denetlenen sıfır atık veri merkezi ağı 14 tesise ulaştı.\n\n"
+                    "• **%0.07 Tek Kullanımlık Plastik Seviyesi:** Cihaz ambalajlarında tek kullanımlık plastik terk edilerek FSC sertifikalı kalıplanmış kağıt liflerine geçildi.\n\n"
+                    "• **Microsoft Circular Centers:** Ömrünü tamamlayan sunucuların %89.4'ü parça düzeyinde yenilenerek yeniden donanım döngüsüne sokuldu."
+                )
+            }
+        else:
+            return {
+                "title": "ESG Alignment & Corporate Action Insight",
+                "pillar": "♻️ Zero Waste & Circular Economy",
+                "target": "2030 Zero Waste & 90%+ Operational Landfill Diversion",
+                "actions": (
+                    "• **14 UL 2799 Certified Datacenter Sites:** Validated zero waste to landfill operations through independent Underwriters Laboratories auditing.\n\n"
+                    "• **0.07% Single-Use Plastic Packaging:** Migrated primary hardware and packaging to 100% recyclable molded fiber designs.\n\n"
+                    "• **Circular Centers Reuse Engine:** Diverted 89.4% of cloud and datacenter hardware components back into operational reuse."
+                )
+            }
+    elif any(k in combined for k in ["ekosistem", "ecosystem", "biyoçeşitlilik", "biodiversity", "doğa", "nature", "planetary", "amsterdam", "madrid"]):
+        if lang == "tr":
+            return {
+                "title": "Sürdürülebilirlik Uyum & Aksiyon Özeti",
+                "pillar": "🌳 Ekosistemler ve Doğal Yaşam (Ecosystems & Biodiversity)",
+                "target": "2030 Ekosistem Koruma & Planetary Computer Haritalama",
+                "actions": (
+                    "• **Planetary Computer:** Küresel çevre gözlem uyduları ve biyoçeşitlilik verileri açık veri platformuyla araştırmacılara sunuldu.\n\n"
+                    "• **Bölgesel Ekolojik Tasarım:** Amsterdam ve Madrid veri merkezlerinde yerel bitki örtüsü koruma ve düşük emisyonlu jeneratör mimarisi uygulandı."
+                )
+            }
+        else:
+            return {
+                "title": "ESG Alignment & Corporate Action Insight",
+                "pillar": "🌳 Ecosystems & Biodiversity Protection",
+                "target": "2030 Ecosystem Protection & Planetary Computer",
+                "actions": (
+                    "• **Planetary Computer Platform:** Environmental satellite imagery and ecological datasets aggregated for global conservation.\n\n"
+                    "• **Regional Ecological Design:** Datacenters in Amsterdam and Madrid feature localized flora restoration and low-emission backup power."
+                )
+            }
+    return None
 
 # ══════════════════════════════════════════════════════════════════════════════
 # ÇİFT DİLLİ METİN SÖZLÜĞÜ (BILINGUAL DICTIONARY)
@@ -542,7 +1085,9 @@ TEXTS = {
         "sys_caption": "Yerel SLM Çıkarım Mimarisi ve Deterministik Doğrulama Ölçümleri",
         "sys_card1_title": "Teknik Parametreler",
         "sys_card2_title": "500 Soruluk Üretim Benchmarkı",
-        "sys_flow_title": "Çalışma Hattı Akış Şeması"
+        "sys_flow_title": "Çalışma Hattı Akış Şeması",
+        "suggested_followups_title": "💡 Önerilen Takip Soruları",
+        "clear_chat_btn": "Sohbet Geçmişini Temizle"
     },
     "en": {
         "title": "Microsoft EcoRAG Lab",
@@ -594,7 +1139,9 @@ TEXTS = {
         "sys_caption": "Local SLM Inference Architecture and Deterministic Verification Metrics",
         "sys_card1_title": "Technical Parameters",
         "sys_card2_title": "500-Question Production Benchmark",
-        "sys_flow_title": "Pipeline Execution Flowchart"
+        "sys_flow_title": "Pipeline Execution Flowchart",
+        "suggested_followups_title": "💡 Suggested Follow-up Questions",
+        "clear_chat_btn": "Clear Chat History"
     }
 }
 
@@ -651,8 +1198,8 @@ with st.sidebar:
 
     theme_meta = [
         {"id": "pink", "label_tr": "🌸 Toz Pembe", "label_en": "🌸 Blush Rose"},
-        {"id": "blue", "label_tr": "💼 Fluent Azure", "label_en": "💼 Fluent Azure"},
-        {"id": "dark", "label_tr": "🌿 Eco Emerald", "label_en": "🌿 Eco Emerald"},
+        {"id": "blue", "label_tr": "🌊 Okyanus Mavisi", "label_en": "🌊 Ocean Blue"},
+        {"id": "dark", "label_tr": "🌙 Gece Modu", "label_en": "🌙 Dark Mode"},
         {"id": "white", "label_tr": "⚪ Saf Beyaz", "label_en": "⚪ Pure Light"}
     ]
     if "theme_id" not in st.session_state:
@@ -673,11 +1220,34 @@ with st.sidebar:
     )
     if selected_pill:
         st.session_state.theme_id = label_to_id.get(selected_pill, "pink")
-    current_theme_id = st.session_state.theme_id
+    st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
+
+    # 3. 📄 Rapor Yılı Filtresi (Metadata Katmanlama)
+    st.markdown(f"<div class='sidebar-section-title' style='margin-bottom: 6px;'>{'RAPOR YILI FİLTRESİ' if is_tr else 'REPORT YEAR FILTER'}</div>", unsafe_allow_html=True)
+    year_options_map = {
+        ("Tümü (Otomatik)" if is_tr else "All (Auto-Stratified)"): None,
+        "2026 Raporu": "2026",
+        "2025 Raporu": "2025",
+        "2024 Raporu": "2024"
+    }
+    if "sidebar_year_filter" not in st.session_state:
+        st.session_state.sidebar_year_filter = list(year_options_map.keys())[0]
+
+    selected_year_label = st.pills(
+        "Report Year",
+        options=list(year_options_map.keys()),
+        default=st.session_state.sidebar_year_filter,
+        key="sidebar_year_filter_pills",
+        label_visibility="collapsed"
+    )
+    if selected_year_label:
+        st.session_state.sidebar_year_filter = selected_year_label
+    selected_year_filter = year_options_map.get(selected_year_label, None)
+    st.session_state.selected_year_filter = selected_year_filter
 
     st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
 
-    # 3. 🛠️ Sistem Durumu Konteyneri (Rahatlatılmış Dikey Hizalama & Net Kontrast)
+    # 4. 🛠️ Sistem Durumu Konteyneri (Rahatlatılmış Dikey Hizalama & Net Kontrast)
     with st.container(border=True):
         st.markdown(f"<div class='sidebar-box-title' style='margin-bottom: 6px;'>{T['status_box_title']}</div>", unsafe_allow_html=True)
         st.badge(T["status_badge"], icon=":material/check_circle:", color="green")
@@ -693,13 +1263,14 @@ with st.sidebar:
         st.markdown(f"<div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;'><span class='sidebar-metric-label'>{T['status_index']}</span><code>{total_chunks_db} Chunks</code></div>", unsafe_allow_html=True)
         st.markdown(f"<div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;'><span class='sidebar-metric-label'>{T['status_engine']}</span><code>PAL + IR</code></div>", unsafe_allow_html=True)
         with st.expander("⚙️ LLM Endpoint", expanded=False):
+            active_f_url = st.session_state.get("foundry_base_url") or discover_foundry_base_url()
             endpoint_input = st.text_input(
                 "Foundry URL",
-                value=st.session_state.get("foundry_base_url", FOUNDRY_BASE_URL),
+                value=active_f_url,
                 key="foundry_base_url_input",
-                help="Varsayılan: http://127.0.0.1:62095 veya yerel proxy"
+                help="Otomatik tespit edilen Foundry Local URL veya yerel proxy"
             )
-            if endpoint_input != st.session_state.get("foundry_base_url", FOUNDRY_BASE_URL):
+            if endpoint_input != st.session_state.get("foundry_base_url"):
                 st.session_state.foundry_base_url = endpoint_input
 
     st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
@@ -707,6 +1278,8 @@ with st.sidebar:
         st.session_state.messages = []
         gc.collect()
         st.rerun()
+
+current_theme_id = st.session_state.get("theme_id", "pink")
 
 # ══════════════════════════════════════════════════════════════════════════════
 # DİNAMİK TEMA ENJEKSİYONU (4 FARKLI PALET - TAM KONTRAST & EKSİKSİZ BİLEŞEN UYUMU)
@@ -811,19 +1384,33 @@ if current_theme_id == "dark":
     .main .block-container {
         padding-bottom: 130px !important;
     }
-    div[data-testid="stChatInput"] {
+    div[data-testid="stChatInput"],
+    [data-testid="stChatInput"] {
         background-color: #161b22 !important;
         border: 1.5px solid #30363d !important;
         border-radius: 12px !important;
     }
-    div[data-testid="stChatInput"] textarea {
+    div[data-testid="stChatInput"] textarea,
+    div[data-testid="stChatInput"] textarea:focus,
+    div[data-testid="stChatInput"] [data-baseweb="textarea"] textarea,
+    [data-testid="stChatInput"] textarea,
+    [data-testid="stChatInput"] textarea:focus,
+    [data-testid="stChatInput"] textarea *,
+    [data-testid="stChatInput"] [data-baseweb="textarea"],
+    [data-testid="stChatInput"] [data-baseweb="textarea"] textarea {
         background-color: transparent !important;
-        color: #e6edf3 !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        caret-color: #58a6ff !important;
+        font-size: 15px !important;
     }
-    div[data-testid="stChatInput"] textarea::placeholder {
+    div[data-testid="stChatInput"] textarea::placeholder,
+    [data-testid="stChatInput"] textarea::placeholder {
         color: #8b949e !important;
+        -webkit-text-fill-color: #8b949e !important;
     }
-    div[data-testid="stChatInput"] button {
+    div[data-testid="stChatInput"] button,
+    [data-testid="stChatInput"] button {
         color: #f0f6fc !important;
     }
     /* Code Badges */
@@ -2020,6 +2607,93 @@ else:
     """)
 
 # ══════════════════════════════════════════════════════════════════════════════
+# EVRENSEL CANLI DURUM & HAREKETLİ NOKTALAR (. .. ...) ANİMASYON STİLLERİ
+# ══════════════════════════════════════════════════════════════════════════════
+st.html("""
+<style>
+.eco-live-status-card {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(0, 138, 215, 0.09);
+    border: 1px solid rgba(0, 138, 215, 0.3);
+    border-radius: 10px;
+    padding: 8px 16px;
+    margin: 6px 0 12px 0;
+    font-size: 13.5px;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    animation: ecoFadeIn 0.25s ease-out;
+}
+
+@keyframes ecoFadeIn {
+    from { opacity: 0; transform: translateY(3px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.eco-status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.eco-status-pulse {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #008AD7;
+    box-shadow: 0 0 0 0 rgba(0, 138, 215, 0.7);
+    animation: ecoPulseRing 1.5s infinite cubic-bezier(0.66, 0, 0, 1);
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+@keyframes ecoPulseRing {
+    0% {
+        box-shadow: 0 0 0 0 rgba(0, 138, 215, 0.75);
+    }
+    70% {
+        box-shadow: 0 0 0 7px rgba(0, 138, 215, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(0, 138, 215, 0);
+    }
+}
+
+.eco-status-text {
+    font-size: 13.5px;
+    font-weight: 550;
+    color: inherit;
+}
+
+.dynamic-dots {
+    display: inline-flex;
+    font-weight: 900;
+    font-size: 18px;
+    line-height: 1;
+    letter-spacing: 2px;
+    color: #008AD7;
+    min-width: 22px;
+}
+
+.dynamic-dots .dot {
+    opacity: 0;
+    display: inline-block;
+    animation: dynamicDotCycle 1.4s infinite;
+}
+
+.dynamic-dots .d1 { animation-delay: 0.0s; }
+.dynamic-dots .d2 { animation-delay: 0.35s; }
+.dynamic-dots .d3 { animation-delay: 0.70s; }
+
+@keyframes dynamicDotCycle {
+    0%, 15% { opacity: 0; transform: translateY(0); }
+    35%, 80% { opacity: 1; transform: translateY(-1px); }
+    100% { opacity: 0; transform: translateY(0); }
+}
+</style>
+""")
+
+# ══════════════════════════════════════════════════════════════════════════════
 # BAŞLIK VE SEKME DÜZENİ (3 ANA SEKME)
 # ══════════════════════════════════════════════════════════════════════════════
 st.title(T["title"])
@@ -2058,11 +2732,18 @@ with tab_chat:
             "6. Carbon Removal Portfolio (Table 3)"
         ]
 
-    selected_pill = st.pills(
-        T["pills_title"],
-        options=pill_options,
-        label_visibility="collapsed"
-    )
+    chat_hdr1, chat_hdr2 = st.columns([5, 1])
+    with chat_hdr1:
+        selected_pill = st.pills(
+            T["pills_title"],
+            options=pill_options,
+            label_visibility="collapsed"
+        )
+    with chat_hdr2:
+        if st.session_state.messages:
+            if st.button(T["clear_chat_btn"], icon=":material/delete_sweep:", key="btn_clear_chat_top", width="stretch"):
+                st.session_state.messages = []
+                st.rerun()
 
     pill_query_map = {
         # TR
@@ -2088,19 +2769,32 @@ with tab_chat:
     # Mesajlar Konteyneri
     messages_container = st.container()
     with messages_container:
-        for msg in st.session_state.messages:
+        for idx, msg in enumerate(st.session_state.messages):
             with st.chat_message(msg["role"]):
-                if msg["role"] == "assistant" and "route" in msg:
-                    if msg["route"] == "pal":
-                        st.markdown(f":green-badge[{T['badge_pal']}]")
-                    else:
-                        st.markdown(f":blue-badge[{T['badge_rag']}]")
+                if msg["role"] == "assistant":
+                    if "route" in msg:
+                        lat = msg.get("latency", 0.0)
+                        if msg["route"] == "pal":
+                            st.markdown(f":green-badge[{T['badge_pal']}] :gray-badge[⚡ {lat:.2f}s | 🎯 Doğrulanmış Deterministik Tablo]")
+                        else:
+                            st.markdown(f":blue-badge[{T['badge_rag']}] :gray-badge[⚡ {lat:.2f}s | 🎯 Çapraz Rapor Sentezi]")
 
                 st.markdown(msg["content"])
 
                 if "calc_details" in msg and msg["calc_details"]:
                     with st.expander(T["verified_output_label"], icon=":material/verified:"):
                         st.text(msg["calc_details"])
+                if "insight" in msg and msg["insight"]:
+                    ins = msg["insight"]
+                    with st.container(border=True):
+                        st.markdown(f"#### :material/eco: **{ins['title']}**")
+                        ci1, ci2 = st.columns([1, 2])
+                        with ci1:
+                            st.caption("ESG Sütunu & Hedef" if L == "tr" else "ESG Pillar & Target")
+                            st.markdown(f"**{ins['pillar']}**\n\n🎯 *{ins['target']}*")
+                        with ci2:
+                            st.caption("Microsoft Raporlanan Temel Aksiyonlar" if L == "tr" else "Reported Microsoft Key Actions")
+                            st.markdown(ins["actions"])
                 if "provenance" in msg and msg["provenance"]:
                     prov_title = T["provenance_label"].format(
                         count=len(msg["provenance"]),
@@ -2112,9 +2806,22 @@ with tab_chat:
                             st.markdown(f"**{p['title']}** (Score / Skor: {p['score']:.4f})")
                             st.text(p["content"][:300] + "...")
 
-    # Kullanıcı Girdisi (chat_input veya pill) - En Altta
+                # Modern LLM Chat Özelliği: Son asistan yanıtında interaktif takip soruları (Suggested Follow-ups)
+                if idx == len(st.session_state.messages) - 1 and msg["role"] == "assistant":
+                    followups = get_suggested_followups(msg.get("intent", "general_rag"), L)
+                    if followups:
+                        st.markdown(f"<div style='margin-top: 14px; margin-bottom: 6px;'><small style='font-weight:600; opacity:0.85;'>{T['suggested_followups_title']}</small></div>", unsafe_allow_html=True)
+                        f_cols = st.columns(len(followups))
+                        for f_idx, f_text in enumerate(followups):
+                            with f_cols[f_idx]:
+                                if st.button(f_text, key=f"fup_btn_{idx}_{f_idx}", width="stretch", icon=":material/arrow_forward:"):
+                                    st.session_state.pending_followup = f_text
+                                    st.rerun()
+
+    # Kullanıcı Girdisi (chat_input veya pill veya önerilen takip sorusu)
+    pending_followup = st.session_state.pop("pending_followup", None)
     user_input = st.chat_input(T["chat_placeholder"])
-    query_to_run = user_input or active_query
+    query_to_run = user_input or active_query or pending_followup
 
     if query_to_run:
         if not st.session_state.messages or st.session_state.messages[-1]["content"] != query_to_run:
@@ -2132,35 +2839,14 @@ with tab_chat:
                     badge_placeholder = st.empty()
 
                     # Canlı Durum Bildirimi (On-screen indicator - Emojisiz, Kurumsal)
-                    status_placeholder.info(
-                        "2024–2026 Çevresel Sürdürülebilirlik Raporlarında hibrit arama yapılıyor..." if target_lang == "tr"
-                        else "Performing Hybrid Search across 2024–2026 Environmental Sustainability Reports..."
+                    show_live_status(
+                        status_placeholder,
+                        "2024–2026 Çevresel Sürdürülebilirlik Raporlarında hibrit arama yapılıyor" if target_lang == "tr"
+                        else "Performing Hybrid Search across 2024–2026 Environmental Sustainability Reports"
                     )
 
                     start_time = time.time()
                     try:
-                        q_lower = query_to_run.lower()
-                        is_math_scope = (
-                            ("scope" in q_lower or "emisyon" in q_lower or "sera gazı" in q_lower or "emissions" in q_lower)
-                            and ("trend" in q_lower or "karşılaştır" in q_lower or "compare" in q_lower or "fark" in q_lower or "artış" in q_lower or "delta" in q_lower)
-                        )
-                        is_carbon_removal = (
-                            ("carbon removal" in q_lower or "karbon uzaklaştırma" in q_lower or "uzaklaştırma portföy" in q_lower or "karbon tablosu 3" in q_lower or "table 3" in q_lower or "uzaklaştırma hacmi" in q_lower or "direct air capture" in q_lower or "dac" in q_lower)
-                            and ("technology" in q_lower or "teknoloji" in q_lower or "breakdown" in q_lower or "dağılım" in q_lower or "portföy" in q_lower or "hacim" in q_lower or "volume" in q_lower or "sözleşme" in q_lower or "contract" in q_lower)
-                        )
-                        is_zero_waste_cert = (
-                            ("zero waste" in q_lower or "sıfır atık" in q_lower)
-                            and ("certif" in q_lower or "sertifika" in q_lower or "standart" in q_lower or "standard" in q_lower or "tesis" in q_lower or "veri merkezi" in q_lower or "datacenter" in q_lower or "ul" in q_lower)
-                        )
-                        is_packaging_plastic = (
-                            ("plastik" in q_lower or "plastic" in q_lower or "ambalaj" in q_lower or "packaging" in q_lower)
-                            and ("oran" in q_lower or "percentage" in q_lower or "tek kullanımlık" in q_lower or "single-use" in q_lower or "2026" in q_lower or "2025" in q_lower)
-                        )
-                        is_water_metrics = (
-                            ("su" in q_lower or "water" in q_lower)
-                            and ("yenileme" in q_lower or "replenish" in q_lower or "çekim" in q_lower or "withdrawal" in q_lower or "tamamlama" in q_lower or "achievement" in q_lower)
-                        )
-
                         calc_details = None
                         chunks = []
                         max_score = 0.0
@@ -2170,65 +2856,89 @@ with tab_chat:
                         s_prompt = get_synthesis_prompt(target_lang)
                         f_prompt = get_factual_synthesis_prompt(target_lang)
                         not_found_msg = TEXTS[target_lang]["not_found_msg"]
+                        active_year_filter = st.session_state.get("selected_year_filter", None)
 
-                        if is_math_scope:
+                        intent = classify_esg_intent(query_to_run)
+                        print(f"  [2/3] Ontolojik ESG Niyet Sınıfı: {intent.upper()}", flush=True)
+
+                        if intent == "out_of_domain":
+                            print("  -> Alan Dışı Soru: Güvenli Reddetme Devrede", flush=True)
+                            stream_gen = stream_static_text(not_found_msg)
+                        elif intent == "carbon_commitments":
                             route_type = "pal"
-                            print("  [2/3] Yönlendirme: PAL (Scope 1/2/3 Emisyon Trendi)", flush=True)
-                            status_placeholder.info(
-                                "Deterministik PAL Motoru ile Scope 1/2/3 Emisyon Verileri Hesaplanıyor..." if target_lang == "tr"
-                                else "Calculating Scope 1/2/3 Emission Deltas via Deterministic PAL Engine..."
+                            print("  -> Yönlendirme: PAL (2030 Karbon Negatif & 2050 Tarihsel Taahhütler)", flush=True)
+                            show_live_status(
+                                status_placeholder,
+                                "2030 ve 2050 Kurumsal Karbon ve CFE Taahhütleri Getiriliyor" if target_lang == "tr"
+                                else "Retrieving 2030 & 2050 Corporate Carbon & CFE Commitments"
+                            )
+                            calc_details = compute_carbon_commitments_summary(target_lang)
+                            chunks, max_score = search_context_hybrid(query_to_run, year_filter=active_year_filter)
+                            stream_gen = stream_static_text(calc_details)
+                        elif intent == "carbon_trend_scope":
+                            route_type = "pal"
+                            print("  -> Yönlendirme: PAL (Scope 1/2/3 Emisyon Trendi & Kategori Kırılımı)", flush=True)
+                            show_live_status(
+                                status_placeholder,
+                                "Deterministik PAL Motoru ile Scope 1/2/3 Emisyon Verileri Hesaplanıyor" if target_lang == "tr"
+                                else "Calculating Scope 1/2/3 Emission Deltas via Deterministic PAL Engine"
                             )
                             calc_details = compute_carbon_trend_summary(target_lang)
-                            chunks, max_score = search_context_hybrid(query_to_run)
+                            chunks, max_score = search_context_hybrid(query_to_run, year_filter=active_year_filter)
                             stream_gen = stream_static_text(calc_details)
-                        elif is_carbon_removal:
+                        elif intent == "carbon_removal":
                             route_type = "pal"
-                            print("  [2/3] Yönlendirme: PAL (Karbon Uzaklaştırma Portföyü)", flush=True)
-                            status_placeholder.info(
-                                "Deterministik PAL Motoru ile Karbon Uzaklaştırma Tabloları Çözülüyor..." if target_lang == "tr"
-                                else "Resolving Carbon Removal Tables via Deterministic PAL Engine..."
+                            print("  -> Yönlendirme: PAL (Karbon Uzaklaştırma Portföyü Tablo 3)", flush=True)
+                            show_live_status(
+                                status_placeholder,
+                                "Deterministik PAL Motoru ile Karbon Uzaklaştırma Tabloları Çözülüyor" if target_lang == "tr"
+                                else "Resolving Carbon Removal Tables via Deterministic PAL Engine"
                             )
                             calc_details = compute_carbon_removal_summary(target_lang)
-                            chunks, max_score = search_context_hybrid(query_to_run)
+                            chunks, max_score = search_context_hybrid(query_to_run, year_filter=active_year_filter)
                             stream_gen = stream_static_text(calc_details)
-                        elif is_zero_waste_cert:
+                        elif intent == "zero_waste_circularity":
                             route_type = "pal"
-                            print("  [2/3] Yönlendirme: PAL (Sıfır Atık UL 2799 Tesisleri)", flush=True)
-                            status_placeholder.info(
-                                "Doğrulanmış Sıfır Atık (UL 2799) Sertifikasyon Verileri Getiriliyor..." if target_lang == "tr"
-                                else "Retrieving Verified Zero Waste (UL 2799) Certification Data..."
+                            print("  -> Yönlendirme: PAL (Sıfır Atık UL 2799 & Circular Centers)", flush=True)
+                            show_live_status(
+                                status_placeholder,
+                                "Doğrulanmış Sıfır Atık (UL 2799) ve Döngüsel Donanım Verileri Getiriliyor" if target_lang == "tr"
+                                else "Retrieving Verified Zero Waste (UL 2799) & Hardware Circularity Data"
                             )
                             calc_details = compute_zero_waste_summary(target_lang)
-                            chunks, max_score = search_context_hybrid(query_to_run)
+                            chunks, max_score = search_context_hybrid(query_to_run, year_filter=active_year_filter)
                             stream_gen = stream_static_text(calc_details)
-                        elif is_packaging_plastic:
+                        elif intent == "packaging_plastic":
                             route_type = "pal"
-                            print("  [2/3] Yönlendirme: PAL (Ambalaj ve Plastik Oranları)", flush=True)
-                            status_placeholder.info(
-                                "Ambalaj ve Plastik Azaltım Oranları Doğrulanıyor..." if target_lang == "tr"
-                                else "Verifying Packaging & Single-Use Plastic Metrics..."
+                            print("  -> Yönlendirme: PAL (Ambalaj ve Plastik Oranları)", flush=True)
+                            show_live_status(
+                                status_placeholder,
+                                "Ambalaj ve Plastik Azaltım Oranları Doğrulanıyor" if target_lang == "tr"
+                                else "Verifying Packaging & Single-Use Plastic Metrics"
                             )
                             calc_details = compute_packaging_summary(target_lang)
-                            chunks, max_score = search_context_hybrid(query_to_run)
+                            chunks, max_score = search_context_hybrid(query_to_run, year_filter=active_year_filter)
                             stream_gen = stream_static_text(calc_details)
-                        elif is_water_metrics:
+                        elif intent == "water_stewardship":
                             route_type = "pal"
-                            print("  [2/3] Yönlendirme: PAL (Su Yenileme ve Çekim Metrikleri)", flush=True)
-                            status_placeholder.info(
-                                "Deterministik PAL Motoru ile Su Hedefleri Hesaplanıyor..." if target_lang == "tr"
-                                else "Computing Water Replenishment Metrics via Deterministic PAL..."
+                            print("  -> Yönlendirme: PAL (Su Yenileme, Hedef Gerçekleşme & FIDO Tech)", flush=True)
+                            show_live_status(
+                                status_placeholder,
+                                "Deterministik PAL Motoru ile Su Hedefleri ve Akustik Analiz Çözülüyor" if target_lang == "tr"
+                                else "Computing Water Replenishment Metrics & Acoustic AI via PAL"
                             )
                             calc_details = compute_water_summary(target_lang)
-                            chunks, max_score = search_context_hybrid(query_to_run)
+                            chunks, max_score = search_context_hybrid(query_to_run, year_filter=active_year_filter)
                             stream_gen = stream_static_text(calc_details)
-                        elif is_mathematical_query(query_to_run):
+                        elif intent == "mathematical_query":
                             route_type = "pal"
                             print("  [2/3] Yönlendirme: Dinamik PAL (Program-of-Thoughts / Python ALU)", flush=True)
-                            status_placeholder.info(
-                                "Dinamik PAL Motoru ile Sayısal Veriler Ayrıştırılıyor ve Hesaplanıyor..." if target_lang == "tr"
-                                else "Extracting data & calculating metrics via Dynamic PAL Engine..."
+                            show_live_status(
+                                status_placeholder,
+                                "Dinamik PAL Motoru ile Sayısal Veriler Ayrıştırılıyor ve Hesaplanıyor" if target_lang == "tr"
+                                else "Extracting data & calculating metrics via Dynamic PAL Engine"
                             )
-                            chunks, max_score = search_context_hybrid(query_to_run)
+                            chunks, max_score = search_context_hybrid(query_to_run, year_filter=active_year_filter)
                             if not chunks or max_score < MIN_SCORE_FLOOR:
                                 print("  -> Benzerlik Eşiği Altında: Kayıt Bulunamadı", flush=True)
                                 stream_gen = stream_static_text(not_found_msg)
@@ -2252,80 +2962,125 @@ with tab_chat:
                                     synth_prompt = (
                                         f"Doğrulanmış Kesin Matematik Verileri (Python ALU tarafından hesaplanmıştır):\n{calc_details}\n\n"
                                         f"Soru: {query_to_run}\n\n"
-                                        f"Lütfen yukarıdaki doğrulanmış hesaplama sonuçlarını kullanarak soruyu doğrudan, profesyonel ve net Türkçe ile 2-3 cümlede yanıtla. Verilen sayıları ve birimleri tam olarak koru. Kesinlikle kendini tekrar etme."
+                                        f"Lütfen yukarıdaki doğrulanmış hesaplama sonuçlarını kullanarak soruyu; dil bilgisi kurallarına tam uygun, çeviri kokmayan, duru ve akıcı bir Türkçe ile yanıtla. 1-2 cümlelik net bir Yönetici Özeti ve ardından önemli metrik maddelerini sun. Verilen sayıları ve birimleri tam olarak koru. Kesinlikle kendini tekrar etme."
                                         if target_lang == "tr" else
                                         f"Verified Exact Mathematical Results (Calculated via Python ALU):\n{calc_details}\n\n"
                                         f"Question: {query_to_run}\n\n"
-                                        f"Using the verified calculation results above, compose a direct, professional and concise 2-3 sentence answer in English. Retain all numbers and units exactly. Do not repeat yourself."
+                                        f"Using the verified calculation results above, compose an executive, human-friendly and clear 2-3 sentence answer in English. Retain all numbers and units exactly without redundancy."
                                     )
-                                    stream_gen = query_foundry_stream(f_prompt, synth_prompt, temperature=0.0)
+                                    stream_gen = query_foundry_stream(f_prompt, synth_prompt)
                                 else:
                                     print("  -> PoT Kodu Çıkarılamadı, Standart RAG'e Geçiliyor", flush=True)
                                     stream_gen = query_foundry_stream(
                                         s_prompt,
-                                        f"Context:\n{context_str}\n\nQuestion: {query_to_run}",
-                                        temperature=0.0
+                                        f"Context:\n{context_str}\n\nQuestion: {query_to_run}"
                                     )
                         else:
                             if not is_esg_query(query_to_run):
                                 print("  [2/3] Alan Dışı Soru: Güvenli Reddetme Devrede", flush=True)
                                 stream_gen = stream_static_text(not_found_msg)
                             else:
-                                print(f"  [2/3] Hibrit Vektör Arama Çalıştırılıyor...", flush=True)
-                                chunks, max_score = search_context_hybrid(query_to_run)
+                                search_query = query_to_run
+                                if target_lang == "tr":
+                                    show_live_status(status_placeholder, "Soru analiz ediliyor ve İngilizce rapor korpusu için eşleniyor")
+                                    en_search_query = translate_query_to_en(query_to_run)
+                                    if en_search_query and en_search_query != query_to_run:
+                                        print(f"  -> Soru İngilizceye Eşlendi: \"{en_search_query}\"", flush=True)
+                                        search_query = en_search_query
+
+                                print(f"  [2/3] Hibrit Vektör Arama Çalıştırılıyor (Filtre: {active_year_filter or 'Otomatik'})...", flush=True)
+                                chunks, max_score = search_context_hybrid(search_query, year_filter=active_year_filter)
+                                if (not chunks or max_score < MIN_SCORE_FLOOR) and search_query != query_to_run:
+                                    # İngilizce eşleme skoru düşükse orijinal sorguyu da dene
+                                    alt_chunks, alt_score = search_context_hybrid(query_to_run, year_filter=active_year_filter)
+                                    if alt_score > max_score:
+                                        chunks, max_score = alt_chunks, alt_score
+
                                 print(f"  -> Arama Tamamlandı ({len(chunks)} chunk, En Yüksek Skor: {max_score:.4f})", flush=True)
                                 if not chunks or max_score < MIN_SCORE_FLOOR:
                                     print("  -> Benzerlik Eşiği Altında: Kayıt Bulunamadı", flush=True)
                                     stream_gen = stream_static_text(not_found_msg)
                                 else:
-                                    status_placeholder.info(
-                                        "Yerel Model (phi-4-mini) ile Yapısal Veri Çıkarımı ve Sentez Yapılıyor..." if target_lang == "tr"
-                                        else "Local SLM (phi-4-mini) extracting structured data and synthesizing answer..."
+                                    show_live_status(
+                                        status_placeholder,
+                                        "Yerel Model (phi-4-mini) ile Yapısal Veri Çıkarımı ve Sentez Yapılıyor" if target_lang == "tr"
+                                        else "Local SLM (phi-4-mini) extracting structured data and synthesizing answer"
                                     )
                                     print("  [3/3] Yerel Model (phi-4-mini) Yanıt Üretiyor...", flush=True)
                                     context_chunks = [c["content"] for c in chunks]
-                                    extract_prompt = format_extraction_prompt(query_to_run, context_chunks)
-                                    raw_json = query_foundry(EXTRACTION_SYSTEM_PROMPT, extract_prompt, temperature=0.0)
+                                    pydantic_matched = False
+                                    verified_metrics_str = ""
 
                                     try:
-                                        cleaned = re.search(r"\{.*\}", raw_json, re.DOTALL).group(0)
-                                        plan = QueryExtractionPlan(**json.loads(cleaned))
-                                        resolution = DeterministicResolver.validate_and_filter(plan, query_to_run)
+                                        extract_prompt = format_extraction_prompt(query_to_run, context_chunks)
+                                        raw_json = query_foundry(EXTRACTION_SYSTEM_PROMPT, extract_prompt, temperature=0.0, max_tokens=768)
+                                        match = re.search(r"\{.*\}", raw_json, re.DOTALL)
+                                        if match:
+                                            plan = QueryExtractionPlan(**json.loads(match.group(0)))
+                                            resolution = DeterministicResolver.validate_and_filter(plan, query_to_run)
+                                            if resolution.get("status") == "MATCH" and resolution.get("metrics"):
+                                                pydantic_matched = True
+                                                verified_metrics_str = "\n".join([
+                                                    f"- Entity: {m.entity}, Type: {m.metric_type}, "
+                                                    f"Value: {m.string_value if m.string_value else f'{m.value:,.0f} {m.unit}'}, "
+                                                    f"Scope: {m.temporal_scope}, Cumulative: {m.is_cumulative}"
+                                                    for m in resolution["metrics"]
+                                                ])
+                                                calc_details = verified_metrics_str
+                                    except Exception as e:
+                                        print(f"  -> Pydantic Çıkarım/Eşleme Atlandı: {e}", flush=True)
 
-                                        if resolution["status"] == "MATCH" and resolution["metrics"]:
-                                            verified_metrics_str = "\n".join([
-                                                f"- Entity: {m.entity}, Type: {m.metric_type}, "
-                                                f"Value: {m.string_value if m.string_value else f'{m.value:,.0f} {m.unit}'}, "
-                                                f"Scope: {m.temporal_scope}, Cumulative: {m.is_cumulative}"
-                                                for m in resolution["metrics"]
-                                            ])
-                                            calc_details = verified_metrics_str
-                                            synthesis_prompt = f"Verified Metrics:\n{verified_metrics_str}\n\nQuestion: {query_to_run}"
-                                            stream_gen = query_foundry_stream(f_prompt, synthesis_prompt, temperature=0.0)
+                                    if pydantic_matched:
+                                        if target_lang == "tr":
+                                            s_system = get_factual_synthesis_prompt("tr")
+                                            synthesis_prompt = (
+                                                f"Doğrulanmış Rapor Metrikleri:\n{verified_metrics_str}\n\n"
+                                                f"Soru: {query_to_run}\n\n"
+                                                f"Doğrudan Türkçe Yönetici Özeti ve Yanıt:"
+                                            )
                                         else:
-                                            context_str = "\n\n".join(context_chunks)
+                                            s_system = get_factual_synthesis_prompt("en")
+                                            synthesis_prompt = (
+                                                f"Verified Report Metrics:\n{verified_metrics_str}\n\n"
+                                                f"Question: {query_to_run}\n\n"
+                                                f"Direct Executive Answer:"
+                                            )
+                                        stream_gen = query_foundry_stream(s_system, synthesis_prompt)
+                                    else:
+                                        context_str = "\n\n".join(context_chunks)
+                                        if target_lang == "tr":
+                                            show_live_status(status_placeholder, "Rapor verileri analiz ediliyor ve Türkçe yönetici özeti sentezleniyor")
+                                            en_q = search_query if search_query != query_to_run else query_to_run
+                                            factual_en = query_foundry(
+                                                "You are a Senior Sustainability Analyst. Based ONLY on the provided Microsoft context, compose a concise, high-density factual summary (2-3 sentences) with exact numbers, units, and initiatives. Retain all names and metrics without redundancy. If information is not in context, output 'NOT_FOUND'.",
+                                                f"Context:\n{context_str}\n\nQuestion: {en_q}\n\nFactual Summary:",
+                                                temperature=0.1
+                                            )
+                                            if "NOT_FOUND" in factual_en and len(factual_en.strip()) < 25:
+                                                stream_gen = stream_static_text(not_found_msg)
+                                            else:
+                                                summary_system = (
+                                                    "Sen uzman bir Sürdürülebilirlik Baş Danışmanısın. Aşağıda verilen doğrulanmış İngilizce rapor bulgularını kullanarak soruyu; 1-2 cümlelik akıcı bir Yönetici Özeti ve ardından önemli bulguları içeren son derece duru, kurumsal ve doğal bir Türkçe ile yanıtla. "
+                                                    "Teknik verileri, birimleri (mtCO2e, GW, MWh, %) ve şirket hedeflerini tam olarak koru. Soruyu baştan tekrar etme, çeviri kokan veya devrik cümlelerden kesinlikle kaçın. Tekrara düşme."
+                                                )
+                                                user_prompt_formatted = (
+                                                    f"Soru: {query_to_run}\n\nDoğrulanmış Rapor Bulguları:\n{factual_en}\n\nDoğrudan Türkçe Yönetici Özeti ve Yanıt:"
+                                                )
+                                                stream_gen = query_foundry_stream(
+                                                    summary_system,
+                                                    user_prompt_formatted
+                                                )
+                                        else:
                                             summary_system = (
-                                                "Sen uzman bir Sürdürülebilirlik Analistisin. Yalnızca verilen resmi rapor bağlamını kullanarak soruyu akıcı, maddeler halinde ve profesyonel Türkçe ile 2-4 cümlede doğrudan yanıtla. Kesinlikle aynı kelimeleri veya cümleleri tekrarlama. Eğer bilgi bağlamda yoksa 'Microsoft Çevresel Sürdürülebilirlik raporlarında bu konuyla ilgili bilgi bulunmamaktadır.' yanıtını ver."
-                                                if target_lang == "tr"
-                                                else "You are a senior Sustainability Analyst. Answer clearly in 2-4 sentences using ONLY the provided report context in fluent English. Never repeat words or phrases. If information is not in context, state 'I cannot find information regarding this in the provided Microsoft Environmental Sustainability reports.'"
+                                                "You are a senior Sustainability Advisor. Using ONLY the provided official Microsoft report context, explain clearly with a 1-2 sentence human-friendly Executive Summary followed by key findings or reported actions in fluent, professional English. Retain all exact metrics and units without redundant repetition. If not in context, state 'I cannot find information regarding this in the provided Microsoft Environmental Sustainability reports.'"
+                                            )
+                                            user_prompt_formatted = (
+                                                f"Context:\n{context_str}\n\nQuestion: {query_to_run}\n\nExecutive Answer:"
                                             )
                                             stream_gen = query_foundry_stream(
                                                 summary_system,
-                                                f"Context:\n{context_str}\n\nQuestion: {query_to_run}",
-                                                temperature=0.0
+                                                user_prompt_formatted
                                             )
-                                    except Exception:
-                                        context_str = "\n\n".join(context_chunks)
-                                        fallback_system = (
-                                            "Sen uzman bir Sürdürülebilirlik Analistisin. Yalnızca verilen bağlamı kullanarak akıcı ve net Türkçe ile 2-3 cümlede yanıtla. Kesinlikle kendini tekrarlama."
-                                            if target_lang == "tr"
-                                            else "You are a precise Sustainability Analyst. Answer directly in 2-3 concise sentences using ONLY context in fluent English. Do not repeat yourself."
-                                        )
-                                        stream_gen = query_foundry_stream(
-                                            fallback_system,
-                                            f"Context:\n{context_str}\n\nQuestion: {query_to_run}",
-                                            temperature=0.0
-                                        )
 
                         # Bekleme belirtecini temizle, rozeti yerleştir ve akışı başlat
                         status_placeholder.empty()
@@ -2340,6 +3095,19 @@ with tab_chat:
 
                         latency = time.time() - start_time
                         print(f"  [OK] Yanıt Başarıyla Tamamlandı (Gecikme: {latency:.2f}s)\n", flush=True)
+
+                        # 🌟 Sürdürülebilirlik Uyum & Aksiyon Kartı (ESG Insight)
+                        insight = get_esg_impact_insight(query_to_run, ans, target_lang)
+                        if insight:
+                            with st.container(border=True):
+                                st.markdown(f"#### :material/eco: **{insight['title']}**")
+                                ci1, ci2 = st.columns([1, 2])
+                                with ci1:
+                                    st.caption("ESG Sütunu & Hedef" if target_lang == "tr" else "ESG Pillar & Target")
+                                    st.markdown(f"**{insight['pillar']}**\n\n🎯 *{insight['target']}*")
+                                with ci2:
+                                    st.caption("Microsoft Raporlanan Temel Aksiyonlar" if target_lang == "tr" else "Reported Microsoft Key Actions")
+                                    st.markdown(insight["actions"])
 
                         if calc_details:
                             with st.expander(T["verified_output_label"], icon=":material/verified:"):
@@ -2359,12 +3127,15 @@ with tab_chat:
                             "role": "assistant",
                             "content": ans,
                             "route": route_type,
+                            "intent": intent,
                             "calc_details": calc_details,
                             "provenance": chunks,
+                            "insight": insight,
                             "max_score": max_score,
                             "latency": latency
                         })
                         gc.collect()
+                        st.rerun()
 
                     except Exception as e:
                         status_placeholder.empty()

@@ -42,7 +42,7 @@ Real-time streaming chat with automatic language detection (TR/EN), deterministi
 
 <div align="center">
 
-| English Assistant & PAL Calculation (Blush Rose Theme) | Turkish Assistant & 2026 PAL Extraction (Fluent Azure Theme) |
+| English Assistant & PAL Calculation (Blush Rose Theme) | Turkish Assistant & 2026 PAL Extraction (Ocean Blue Theme) |
 |---|---|
 | ![Smart Assistant & PAL Calculation](images/chat_response_pal.png) | ![Turkish Assistant & 2026 PAL Extraction](images/chat_response_pal_tr.png) |
 

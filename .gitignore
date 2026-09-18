@@ -53,3 +53,9 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Streamlit credentials & agent customizations
+.streamlit/credentials.toml
+.agents/
+.claude/
+
