@@ -550,7 +550,7 @@ def compute_carbon_trend_summary(lang: str = "tr") -> str:
             "### 📌 Yönetici Özeti (Sera Gazı Emisyon Trendi)",
             f"> Microsoft'un FY20 baz yılından FY25'e kadar olan sera gazı emisyonları incelendiğinde; küresel bulut ve yapay zeka veri merkezi altyapı yatırımları nedeniyle toplam emisyon hacminde **+{tot_delta:,} mtCO2e (+%{tot_pct:.2f})** büyüme kaydedilmiştir. Şirket, bu artışı dengelemek için tedarik zincirinde katı temiz enerji şartı ve 21.9M tonluk rekor karbon uzaklaştırma sözleşmeleri uygulamaktadır.",
             "",
-            "### 📊 Doğrulanmış Sera Gazı Emisyon Karşılaştırma Tablosu (FY20 Baseline ➔ FY24 ➔ FY25)",
+            "### 📊 Doğrulanmış Emisyon Değişimi & Sera Gazı Karşılaştırma Tablosu (FY20 Baseline ➔ FY24 ➔ FY25)",
             "",
             "| Emisyon Kapsamı (Scope) | FY20 Baz Yılı | FY24 | FY25 | Net Değişim (FY20➔FY25) | Değişim Oranı |",
             "| :--- | :---: | :---: | :---: | :---: | :---: |",
@@ -1397,8 +1397,13 @@ if current_theme_id == "dark":
         padding-bottom: 130px !important;
     }
     div[data-testid="stChatInput"],
-    [data-testid="stChatInput"] {
+    [data-testid="stChatInput"],
+    [data-testid="stChatInput"] > div,
+    [data-testid="stChatInput"] > div > div,
+    [data-testid="stChatInput"] [data-baseweb="base-input"],
+    [data-testid="stChatInput"] [data-baseweb="textarea"] {
         background-color: #161b22 !important;
+        background: #161b22 !important;
         border: 1.5px solid #30363d !important;
         border-radius: 12px !important;
     }
@@ -1694,40 +1699,63 @@ elif current_theme_id == "white":
         color: #ffffff !important;
     }
 
-    /* 💬 Chat Input & Bottom Bar */
+    /* 💬 Chat Input & Bottom Bar (Saf Beyaz & Yüksek Kontrastlı Net Siyah Metin) */
     [data-testid="stBottom"],
     [data-testid="stBottom"] > div,
-    [data-testid="stBottomBlockContainer"] {
+    [data-testid="stBottomBlockContainer"],
+    [data-testid="stChatInputContainer"] {
         position: fixed !important;
         bottom: 0px !important;
         left: 0px !important;
         right: 0px !important;
         z-index: 9999 !important;
         background-color: #ffffff !important;
+        background: #ffffff !important;
         border: none !important;
         padding: 10px 20px 20px 20px !important;
     }
     .main .block-container {
         padding-bottom: 130px !important;
     }
-    [data-testid="stChatInput"] {
+    [data-testid="stChatInput"],
+    div[data-testid="stChatInput"],
+    [data-testid="stChatInput"] > div,
+    [data-testid="stChatInput"] > div > div,
+    [data-testid="stChatInput"] [data-baseweb="base-input"],
+    [data-testid="stChatInput"] [data-baseweb="textarea"] {
         background-color: #ffffff !important;
-        border: 2px solid #cbd5e1 !important;
+        background: #ffffff !important;
+        border: 2px solid #94a3b8 !important;
         border-radius: 14px !important;
-        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06) !important;
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08) !important;
+    }
+    [data-testid="stChatInput"]:focus-within,
+    div[data-testid="stChatInput"]:focus-within,
+    [data-testid="stChatInput"] [data-baseweb="base-input"]:focus-within {
+        border-color: #0f172a !important;
+        box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.2) !important;
     }
     [data-testid="stChatInput"] textarea,
-    [data-testid="stChatInput"] textarea * {
+    [data-testid="stChatInput"] textarea:focus,
+    [data-testid="stChatInput"] textarea *,
+    [data-testid="stChatInput"] [data-baseweb="textarea"] textarea {
         background-color: transparent !important;
+        background: transparent !important;
         color: #0f172a !important;
+        -webkit-text-fill-color: #0f172a !important;
+        caret-color: #0f172a !important;
         font-size: 15px !important;
+        font-weight: 500 !important;
     }
-    [data-testid="stChatInput"] textarea::placeholder {
-        color: #94a3b8 !important;
+    [data-testid="stChatInput"] textarea::placeholder,
+    [data-testid="stChatInput"] [data-baseweb="textarea"] textarea::placeholder {
+        color: #64748b !important;
+        -webkit-text-fill-color: #64748b !important;
     }
     [data-testid="stChatInput"] button {
         background-color: #0f172a !important;
         color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
         border-radius: 8px !important;
     }
 
@@ -2071,13 +2099,13 @@ elif current_theme_id == "blue":
     [data-testid="stBottomBlockContainer"],
     [data-testid="stChatInputContainer"],
     [data-testid="stChatInput"],
+    div[data-testid="stChatInput"],
     [data-testid="stChatInput"] > div,
-    [data-testid="stChatInput"] > div > div {
-        background-color: transparent !important;
-        border: none !important;
-    }
-    [data-testid="stChatInput"] {
+    [data-testid="stChatInput"] > div > div,
+    [data-testid="stChatInput"] [data-baseweb="base-input"],
+    [data-testid="stChatInput"] [data-baseweb="textarea"] {
         background-color: #ffffff !important;
+        background: #ffffff !important;
         border: 2px solid #93c5fd !important;
         border-radius: 14px !important;
         box-shadow: 0 2px 8px rgba(0, 120, 212, 0.08) !important;
@@ -2408,13 +2436,13 @@ else:
     [data-testid="stBottomBlockContainer"],
     [data-testid="stChatInputContainer"],
     [data-testid="stChatInput"],
+    div[data-testid="stChatInput"],
     [data-testid="stChatInput"] > div,
-    [data-testid="stChatInput"] > div > div {
-        background-color: transparent !important;
-        border: none !important;
-    }
-    [data-testid="stChatInput"] {
+    [data-testid="stChatInput"] > div > div,
+    [data-testid="stChatInput"] [data-baseweb="base-input"],
+    [data-testid="stChatInput"] [data-baseweb="textarea"] {
         background-color: #ffffff !important;
+        background: #ffffff !important;
         border: 2px solid #d99ca9 !important;
         border-radius: 14px !important;
         box-shadow: 0 2px 8px rgba(184, 93, 117, 0.08) !important;
@@ -2755,6 +2783,7 @@ with tab_chat:
         if st.session_state.messages:
             if st.button(T["clear_chat_btn"], icon=":material/delete_sweep:", key="btn_clear_chat_top", width="stretch"):
                 st.session_state.messages = []
+                st.session_state["last_processed_pill"] = None
                 st.rerun()
 
     pill_query_map = {
@@ -2776,7 +2805,11 @@ with tab_chat:
 
     active_query = None
     if selected_pill and selected_pill in pill_query_map:
-        active_query = pill_query_map[selected_pill]
+        if st.session_state.get("last_processed_pill") != selected_pill:
+            active_query = pill_query_map[selected_pill]
+            st.session_state["last_processed_pill"] = selected_pill
+    elif not selected_pill:
+        st.session_state["last_processed_pill"] = None
 
     # Mesajlar Konteyneri
     messages_container = st.container()
@@ -2833,327 +2866,336 @@ with tab_chat:
     # Kullanıcı Girdisi (chat_input veya pill veya önerilen takip sorusu)
     pending_followup = st.session_state.pop("pending_followup", None)
     user_input = st.chat_input(T["chat_placeholder"])
-    query_to_run = user_input or active_query or pending_followup
+    new_query = user_input or active_query or pending_followup
 
-    if query_to_run:
-        if not st.session_state.messages or st.session_state.messages[-1]["content"] != query_to_run:
-            st.session_state.messages.append({"role": "user", "content": query_to_run})
-            with messages_container:
-                with st.chat_message("user"):
-                    st.markdown(query_to_run)
+    if new_query:
+        if not st.session_state.messages or st.session_state.messages[-1]["content"] != new_query or st.session_state.messages[-1]["role"] != "user":
+            st.session_state.messages.append({"role": "user", "content": new_query})
+            st.rerun()
 
-                target_lang = detect_query_language(query_to_run, default_lang=L)
-                print(f"\n[ECO-RAG] Yeni Sorgu Alındı: \"{query_to_run}\"", flush=True)
-                print(f"  [1/3] Dil Tespiti: {target_lang.upper()} | Analiz Başlatılıyor...", flush=True)
+    # Eğer son mesaj bir kullanıcı mesajıysa (henüz yanıtlanmamış), asistan yanıtını kesintisiz üret ve tamamla.
+    # Bu mimari, kullanıcı yanıt beklenirken temayı veya dili değiştirse dahi işlemin yarıda kalmamasını garanti eder!
+    if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
+        query_to_run = st.session_state.messages[-1]["content"]
+        target_lang = detect_query_language(query_to_run, default_lang=L)
+        print(f"\n[ECO-RAG] İşleniyor: \"{query_to_run}\"", flush=True)
+        print(f"  [1/3] Dil Tespiti: {target_lang.upper()} | Analiz Başlatılıyor...", flush=True)
 
-                with st.chat_message("assistant"):
-                    status_placeholder = st.empty()
-                    badge_placeholder = st.empty()
+        with messages_container:
+            with st.chat_message("assistant"):
+                status_placeholder = st.empty()
+                badge_placeholder = st.empty()
 
-                    # Canlı Durum Bildirimi (On-screen indicator - Emojisiz, Kurumsal)
-                    show_live_status(
-                        status_placeholder,
-                        "2024–2026 Çevresel Sürdürülebilirlik Raporlarında hibrit arama yapılıyor" if target_lang == "tr"
-                        else "Performing Hybrid Search across 2024–2026 Environmental Sustainability Reports"
-                    )
+                # Canlı Durum Bildirimi (On-screen indicator - Emojisiz, Kurumsal)
+                show_live_status(
+                    status_placeholder,
+                    "2024–2026 Çevresel Sürdürülebilirlik Raporlarında hibrit arama yapılıyor" if target_lang == "tr"
+                    else "Performing Hybrid Search across 2024–2026 Environmental Sustainability Reports"
+                )
 
-                    start_time = time.time()
-                    try:
-                        calc_details = None
-                        chunks = []
-                        max_score = 0.0
-                        route_type = "rag"
-                        stream_gen = None
+                start_time = time.time()
+                try:
+                    calc_details = None
+                    chunks = []
+                    max_score = 0.0
+                    route_type = "rag"
+                    stream_gen = None
 
-                        s_prompt = get_synthesis_prompt(target_lang)
-                        f_prompt = get_factual_synthesis_prompt(target_lang)
-                        not_found_msg = TEXTS[target_lang]["not_found_msg"]
-                        active_year_filter = st.session_state.get("selected_year_filter", None)
+                    s_prompt = get_synthesis_prompt(target_lang)
+                    f_prompt = get_factual_synthesis_prompt(target_lang)
+                    not_found_msg = TEXTS[target_lang]["not_found_msg"]
+                    active_year_filter = st.session_state.get("selected_year_filter", None)
 
-                        intent = classify_esg_intent(query_to_run)
-                        print(f"  [2/3] Ontolojik ESG Niyet Sınıfı: {intent.upper()}", flush=True)
+                    intent = classify_esg_intent(query_to_run)
+                    print(f"  [2/3] Ontolojik ESG Niyet Sınıfı: {intent.upper()}", flush=True)
 
-                        if intent == "out_of_domain":
-                            print("  -> Alan Dışı Soru: Güvenli Reddetme Devrede", flush=True)
+                    if intent == "out_of_domain":
+                        print("  -> Alan Dışı Soru: Güvenli Reddetme Devrede", flush=True)
+                        stream_gen = stream_static_text(not_found_msg)
+                    elif intent == "carbon_commitments":
+                        route_type = "pal"
+                        print("  -> Yönlendirme: PAL (2030 Karbon Negatif & 2050 Tarihsel Taahhütler)", flush=True)
+                        show_live_status(
+                            status_placeholder,
+                            "2030 ve 2050 Kurumsal Karbon ve CFE Taahhütleri Getiriliyor" if target_lang == "tr"
+                            else "Retrieving 2030 & 2050 Corporate Carbon & CFE Commitments"
+                        )
+                        calc_details = compute_carbon_commitments_summary(target_lang)
+                        chunks, max_score = search_context_hybrid(query_to_run, year_filter=active_year_filter)
+                        stream_gen = stream_static_text(calc_details)
+                    elif intent == "carbon_trend_scope":
+                        route_type = "pal"
+                        print("  -> Yönlendirme: PAL (Scope 1/2/3 Emisyon Trendi & Kategori Kırılımı)", flush=True)
+                        show_live_status(
+                            status_placeholder,
+                            "Deterministik PAL Motoru ile Scope 1/2/3 Emisyon Verileri Hesaplanıyor" if target_lang == "tr"
+                            else "Calculating Scope 1/2/3 Emission Deltas via Deterministic PAL Engine"
+                        )
+                        calc_details = compute_carbon_trend_summary(target_lang)
+                        chunks, max_score = search_context_hybrid(query_to_run, year_filter=active_year_filter)
+                        stream_gen = stream_static_text(calc_details)
+                    elif intent == "carbon_removal":
+                        route_type = "pal"
+                        print("  -> Yönlendirme: PAL (Karbon Uzaklaştırma Portföyü Tablo 3)", flush=True)
+                        show_live_status(
+                            status_placeholder,
+                            "Deterministik PAL Motoru ile Karbon Uzaklaştırma Tabloları Çözülüyor" if target_lang == "tr"
+                            else "Resolving Carbon Removal Tables via Deterministic PAL Engine"
+                        )
+                        calc_details = compute_carbon_removal_summary(target_lang)
+                        chunks, max_score = search_context_hybrid(query_to_run, year_filter=active_year_filter)
+                        stream_gen = stream_static_text(calc_details)
+                    elif intent == "zero_waste_circularity":
+                        route_type = "pal"
+                        print("  -> Yönlendirme: PAL (Sıfır Atık UL 2799 & Circular Centers)", flush=True)
+                        show_live_status(
+                            status_placeholder,
+                            "Doğrulanmış Sıfır Atık (UL 2799) ve Döngüsel Donanım Verileri Getiriliyor" if target_lang == "tr"
+                            else "Retrieving Verified Zero Waste (UL 2799) & Hardware Circularity Data"
+                        )
+                        calc_details = compute_zero_waste_summary(target_lang)
+                        chunks, max_score = search_context_hybrid(query_to_run, year_filter=active_year_filter)
+                        stream_gen = stream_static_text(calc_details)
+                    elif intent == "packaging_plastic":
+                        route_type = "pal"
+                        print("  -> Yönlendirme: PAL (Ambalaj ve Plastik Oranları)", flush=True)
+                        show_live_status(
+                            status_placeholder,
+                            "Ambalaj ve Plastik Azaltım Oranları Doğrulanıyor" if target_lang == "tr"
+                            else "Verifying Packaging & Single-Use Plastic Metrics"
+                        )
+                        calc_details = compute_packaging_summary(target_lang)
+                        chunks, max_score = search_context_hybrid(query_to_run, year_filter=active_year_filter)
+                        stream_gen = stream_static_text(calc_details)
+                    elif intent == "water_stewardship":
+                        route_type = "pal"
+                        print("  -> Yönlendirme: PAL (Su Yenileme, Hedef Gerçekleşme & FIDO Tech)", flush=True)
+                        show_live_status(
+                            status_placeholder,
+                            "Deterministik PAL Motoru ile Su Hedefleri ve Akustik Analiz Çözülüyor" if target_lang == "tr"
+                            else "Computing Water Replenishment Metrics & Acoustic AI via PAL"
+                        )
+                        calc_details = compute_water_summary(target_lang)
+                        chunks, max_score = search_context_hybrid(query_to_run, year_filter=active_year_filter)
+                        stream_gen = stream_static_text(calc_details)
+                    elif intent == "mathematical_query":
+                        route_type = "pal"
+                        print("  [2/3] Yönlendirme: Dinamik PAL (Program-of-Thoughts / Python ALU)", flush=True)
+                        show_live_status(
+                            status_placeholder,
+                            "Dinamik PAL Motoru ile Sayısal Veriler Ayrıştırılıyor ve Hesaplanıyor" if target_lang == "tr"
+                            else "Extracting data & calculating metrics via Dynamic PAL Engine"
+                        )
+                        chunks, max_score = search_context_hybrid(query_to_run, year_filter=active_year_filter)
+                        if not chunks or max_score < MIN_SCORE_FLOOR:
+                            print("  -> Benzerlik Eşiği Altında: Kayıt Bulunamadı", flush=True)
                             stream_gen = stream_static_text(not_found_msg)
-                        elif intent == "carbon_commitments":
-                            route_type = "pal"
-                            print("  -> Yönlendirme: PAL (2030 Karbon Negatif & 2050 Tarihsel Taahhütler)", flush=True)
-                            show_live_status(
-                                status_placeholder,
-                                "2030 ve 2050 Kurumsal Karbon ve CFE Taahhütleri Getiriliyor" if target_lang == "tr"
-                                else "Retrieving 2030 & 2050 Corporate Carbon & CFE Commitments"
-                            )
-                            calc_details = compute_carbon_commitments_summary(target_lang)
-                            chunks, max_score = search_context_hybrid(query_to_run, year_filter=active_year_filter)
-                            stream_gen = stream_static_text(calc_details)
-                        elif intent == "carbon_trend_scope":
-                            route_type = "pal"
-                            print("  -> Yönlendirme: PAL (Scope 1/2/3 Emisyon Trendi & Kategori Kırılımı)", flush=True)
-                            show_live_status(
-                                status_placeholder,
-                                "Deterministik PAL Motoru ile Scope 1/2/3 Emisyon Verileri Hesaplanıyor" if target_lang == "tr"
-                                else "Calculating Scope 1/2/3 Emission Deltas via Deterministic PAL Engine"
-                            )
-                            calc_details = compute_carbon_trend_summary(target_lang)
-                            chunks, max_score = search_context_hybrid(query_to_run, year_filter=active_year_filter)
-                            stream_gen = stream_static_text(calc_details)
-                        elif intent == "carbon_removal":
-                            route_type = "pal"
-                            print("  -> Yönlendirme: PAL (Karbon Uzaklaştırma Portföyü Tablo 3)", flush=True)
-                            show_live_status(
-                                status_placeholder,
-                                "Deterministik PAL Motoru ile Karbon Uzaklaştırma Tabloları Çözülüyor" if target_lang == "tr"
-                                else "Resolving Carbon Removal Tables via Deterministic PAL Engine"
-                            )
-                            calc_details = compute_carbon_removal_summary(target_lang)
-                            chunks, max_score = search_context_hybrid(query_to_run, year_filter=active_year_filter)
-                            stream_gen = stream_static_text(calc_details)
-                        elif intent == "zero_waste_circularity":
-                            route_type = "pal"
-                            print("  -> Yönlendirme: PAL (Sıfır Atık UL 2799 & Circular Centers)", flush=True)
-                            show_live_status(
-                                status_placeholder,
-                                "Doğrulanmış Sıfır Atık (UL 2799) ve Döngüsel Donanım Verileri Getiriliyor" if target_lang == "tr"
-                                else "Retrieving Verified Zero Waste (UL 2799) & Hardware Circularity Data"
-                            )
-                            calc_details = compute_zero_waste_summary(target_lang)
-                            chunks, max_score = search_context_hybrid(query_to_run, year_filter=active_year_filter)
-                            stream_gen = stream_static_text(calc_details)
-                        elif intent == "packaging_plastic":
-                            route_type = "pal"
-                            print("  -> Yönlendirme: PAL (Ambalaj ve Plastik Oranları)", flush=True)
-                            show_live_status(
-                                status_placeholder,
-                                "Ambalaj ve Plastik Azaltım Oranları Doğrulanıyor" if target_lang == "tr"
-                                else "Verifying Packaging & Single-Use Plastic Metrics"
-                            )
-                            calc_details = compute_packaging_summary(target_lang)
-                            chunks, max_score = search_context_hybrid(query_to_run, year_filter=active_year_filter)
-                            stream_gen = stream_static_text(calc_details)
-                        elif intent == "water_stewardship":
-                            route_type = "pal"
-                            print("  -> Yönlendirme: PAL (Su Yenileme, Hedef Gerçekleşme & FIDO Tech)", flush=True)
-                            show_live_status(
-                                status_placeholder,
-                                "Deterministik PAL Motoru ile Su Hedefleri ve Akustik Analiz Çözülüyor" if target_lang == "tr"
-                                else "Computing Water Replenishment Metrics & Acoustic AI via PAL"
-                            )
-                            calc_details = compute_water_summary(target_lang)
-                            chunks, max_score = search_context_hybrid(query_to_run, year_filter=active_year_filter)
-                            stream_gen = stream_static_text(calc_details)
-                        elif intent == "mathematical_query":
-                            route_type = "pal"
-                            print("  [2/3] Yönlendirme: Dinamik PAL (Program-of-Thoughts / Python ALU)", flush=True)
-                            show_live_status(
-                                status_placeholder,
-                                "Dinamik PAL Motoru ile Sayısal Veriler Ayrıştırılıyor ve Hesaplanıyor" if target_lang == "tr"
-                                else "Extracting data & calculating metrics via Dynamic PAL Engine"
-                            )
-                            chunks, max_score = search_context_hybrid(query_to_run, year_filter=active_year_filter)
+                        else:
+                            print("  [3/3] Yerel Model PoT Matematik Kodu Çıkarıyor...", flush=True)
+                            context_chunks = [c["content"] for c in chunks]
+                            context_str = "\n\n".join(context_chunks)
+                            pot_prompt = f"Context:\n{context_str}\n\nQuestion: {query_to_run}\n\nExecutable Python code:"
+                            code_raw = query_foundry(POT_EXTRACTION_SYSTEM_PROMPT, pot_prompt, temperature=0.0)
+                            math_res = DynamicMathExecutor.execute_code_lines(code_raw)
+
+                            if math_res["success"] and math_res["environment"]:
+                                print("  -> Python ALU Hesaplamayı Tamamladı", flush=True)
+                                env = math_res["environment"]
+                                calc_lines = [
+                                    f"• {k}: {v:.2f}" if isinstance(v, float) else f"• {k}: {v}"
+                                    for k, v in env.items() if not k.startswith("_")
+                                ]
+                                calc_details = "Doğrulanmış Python Matematik Sonuçları:\n" + "\n".join(calc_lines)
+
+                                synth_prompt = (
+                                    f"Doğrulanmış Kesin Matematik Verileri (Python ALU tarafından hesaplanmıştır):\n{calc_details}\n\n"
+                                    f"Soru: {query_to_run}\n\n"
+                                    f"Lütfen yukarıdaki doğrulanmış hesaplama sonuçlarını kullanarak soruyu; dil bilgisi kurallarına tam uygun, çeviri kokmayan, duru ve akıcı bir Türkçe ile yanıtla. 1-2 cümlelik net bir Yönetici Özeti ve ardından önemli metrik maddelerini sun. Verilen sayıları ve birimleri tam olarak koru. Kesinlikle kendini tekrar etme."
+                                    if target_lang == "tr" else
+                                    f"Verified Exact Mathematical Results (Calculated via Python ALU):\n{calc_details}\n\n"
+                                    f"Question: {query_to_run}\n\n"
+                                    f"Using the verified calculation results above, compose an executive, human-friendly and clear 2-3 sentence answer in English. Retain all numbers and units exactly without redundancy."
+                                )
+                                stream_gen = query_foundry_stream(f_prompt, synth_prompt)
+                            else:
+                                print("  -> PoT Kodu Çıkarılamadı, Standart RAG'e Geçiliyor", flush=True)
+                                stream_gen = query_foundry_stream(
+                                    s_prompt,
+                                    f"Context:\n{context_str}\n\nQuestion: {query_to_run}"
+                                )
+                    else:
+                        if not is_esg_query(query_to_run):
+                            print("  [2/3] Alan Dışı Soru: Güvenli Reddetme Devrede", flush=True)
+                            stream_gen = stream_static_text(not_found_msg)
+                        else:
+                            search_query = query_to_run
+                            if target_lang == "tr":
+                                show_live_status(status_placeholder, "Soru analiz ediliyor ve İngilizce rapor korpusu için eşleniyor")
+                                en_search_query = translate_query_to_en(query_to_run)
+                                if en_search_query and en_search_query != query_to_run:
+                                    print(f"  -> Soru İngilizceye Eşlendi: \"{en_search_query}\"", flush=True)
+                                    search_query = en_search_query
+
+                            print(f"  [2/3] Hibrit Vektör Arama Çalıştırılıyor (Filtre: {active_year_filter or 'Otomatik'})...", flush=True)
+                            chunks, max_score = search_context_hybrid(search_query, year_filter=active_year_filter)
+                            if (not chunks or max_score < MIN_SCORE_FLOOR) and search_query != query_to_run:
+                                # İngilizce eşleme skoru düşükse orijinal sorguyu da dene
+                                alt_chunks, alt_score = search_context_hybrid(query_to_run, year_filter=active_year_filter)
+                                if alt_score > max_score:
+                                    chunks, max_score = alt_chunks, alt_score
+
+                            print(f"  -> Arama Tamamlandı ({len(chunks)} chunk, En Yüksek Skor: {max_score:.4f})", flush=True)
                             if not chunks or max_score < MIN_SCORE_FLOOR:
                                 print("  -> Benzerlik Eşiği Altında: Kayıt Bulunamadı", flush=True)
                                 stream_gen = stream_static_text(not_found_msg)
                             else:
-                                print("  [3/3] Yerel Model PoT Matematik Kodu Çıkarıyor...", flush=True)
+                                show_live_status(
+                                    status_placeholder,
+                                    "Yerel Model (phi-4-mini) ile Yapısal Veri Çıkarımı ve Sentez Yapılıyor" if target_lang == "tr"
+                                    else "Local SLM (phi-4-mini) extracting structured data and synthesizing answer"
+                                )
+                                print("  [3/3] Yerel Model (phi-4-mini) Yanıt Üretiyor...", flush=True)
                                 context_chunks = [c["content"] for c in chunks]
-                                context_str = "\n\n".join(context_chunks)
-                                pot_prompt = f"Context:\n{context_str}\n\nQuestion: {query_to_run}\n\nExecutable Python code:"
-                                code_raw = query_foundry(POT_EXTRACTION_SYSTEM_PROMPT, pot_prompt, temperature=0.0)
-                                math_res = DynamicMathExecutor.execute_code_lines(code_raw)
+                                pydantic_matched = False
+                                verified_metrics_str = ""
 
-                                if math_res["success"] and math_res["environment"]:
-                                    print("  -> Python ALU Hesaplamayı Tamamladı", flush=True)
-                                    env = math_res["environment"]
-                                    calc_lines = [
-                                        f"• {k}: {v:.2f}" if isinstance(v, float) else f"• {k}: {v}"
-                                        for k, v in env.items() if not k.startswith("_")
-                                    ]
-                                    calc_details = "Doğrulanmış Python Matematik Sonuçları:\n" + "\n".join(calc_lines)
+                                try:
+                                    extract_prompt = format_extraction_prompt(query_to_run, context_chunks)
+                                    raw_json = query_foundry(EXTRACTION_SYSTEM_PROMPT, extract_prompt, temperature=0.0, max_tokens=768)
+                                    match = re.search(r"\{.*\}", raw_json, re.DOTALL)
+                                    if match:
+                                        plan = QueryExtractionPlan(**json.loads(match.group(0)))
+                                        resolution = DeterministicResolver.validate_and_filter(plan, query_to_run)
+                                        if resolution.get("status") == "MATCH" and resolution.get("metrics"):
+                                            pydantic_matched = True
+                                            verified_metrics_str = "\n".join([
+                                                f"- Entity: {m.entity}, Type: {m.metric_type}, "
+                                                f"Value: {m.string_value if m.string_value else f'{m.value:,.0f} {m.unit}'}, "
+                                                f"Scope: {m.temporal_scope}, Cumulative: {m.is_cumulative}"
+                                                for m in resolution["metrics"]
+                                            ])
+                                            calc_details = verified_metrics_str
+                                except Exception as e:
+                                    print(f"  -> Pydantic Çıkarım/Eşleme Atlandı: {e}", flush=True)
 
-                                    synth_prompt = (
-                                        f"Doğrulanmış Kesin Matematik Verileri (Python ALU tarafından hesaplanmıştır):\n{calc_details}\n\n"
-                                        f"Soru: {query_to_run}\n\n"
-                                        f"Lütfen yukarıdaki doğrulanmış hesaplama sonuçlarını kullanarak soruyu; dil bilgisi kurallarına tam uygun, çeviri kokmayan, duru ve akıcı bir Türkçe ile yanıtla. 1-2 cümlelik net bir Yönetici Özeti ve ardından önemli metrik maddelerini sun. Verilen sayıları ve birimleri tam olarak koru. Kesinlikle kendini tekrar etme."
-                                        if target_lang == "tr" else
-                                        f"Verified Exact Mathematical Results (Calculated via Python ALU):\n{calc_details}\n\n"
-                                        f"Question: {query_to_run}\n\n"
-                                        f"Using the verified calculation results above, compose an executive, human-friendly and clear 2-3 sentence answer in English. Retain all numbers and units exactly without redundancy."
-                                    )
-                                    stream_gen = query_foundry_stream(f_prompt, synth_prompt)
-                                else:
-                                    print("  -> PoT Kodu Çıkarılamadı, Standart RAG'e Geçiliyor", flush=True)
-                                    stream_gen = query_foundry_stream(
-                                        s_prompt,
-                                        f"Context:\n{context_str}\n\nQuestion: {query_to_run}"
-                                    )
-                        else:
-                            if not is_esg_query(query_to_run):
-                                print("  [2/3] Alan Dışı Soru: Güvenli Reddetme Devrede", flush=True)
-                                stream_gen = stream_static_text(not_found_msg)
-                            else:
-                                search_query = query_to_run
-                                if target_lang == "tr":
-                                    show_live_status(status_placeholder, "Soru analiz ediliyor ve İngilizce rapor korpusu için eşleniyor")
-                                    en_search_query = translate_query_to_en(query_to_run)
-                                    if en_search_query and en_search_query != query_to_run:
-                                        print(f"  -> Soru İngilizceye Eşlendi: \"{en_search_query}\"", flush=True)
-                                        search_query = en_search_query
-
-                                print(f"  [2/3] Hibrit Vektör Arama Çalıştırılıyor (Filtre: {active_year_filter or 'Otomatik'})...", flush=True)
-                                chunks, max_score = search_context_hybrid(search_query, year_filter=active_year_filter)
-                                if (not chunks or max_score < MIN_SCORE_FLOOR) and search_query != query_to_run:
-                                    # İngilizce eşleme skoru düşükse orijinal sorguyu da dene
-                                    alt_chunks, alt_score = search_context_hybrid(query_to_run, year_filter=active_year_filter)
-                                    if alt_score > max_score:
-                                        chunks, max_score = alt_chunks, alt_score
-
-                                print(f"  -> Arama Tamamlandı ({len(chunks)} chunk, En Yüksek Skor: {max_score:.4f})", flush=True)
-                                if not chunks or max_score < MIN_SCORE_FLOOR:
-                                    print("  -> Benzerlik Eşiği Altında: Kayıt Bulunamadı", flush=True)
-                                    stream_gen = stream_static_text(not_found_msg)
-                                else:
-                                    show_live_status(
-                                        status_placeholder,
-                                        "Yerel Model (phi-4-mini) ile Yapısal Veri Çıkarımı ve Sentez Yapılıyor" if target_lang == "tr"
-                                        else "Local SLM (phi-4-mini) extracting structured data and synthesizing answer"
-                                    )
-                                    print("  [3/3] Yerel Model (phi-4-mini) Yanıt Üretiyor...", flush=True)
-                                    context_chunks = [c["content"] for c in chunks]
-                                    pydantic_matched = False
-                                    verified_metrics_str = ""
-
-                                    try:
-                                        extract_prompt = format_extraction_prompt(query_to_run, context_chunks)
-                                        raw_json = query_foundry(EXTRACTION_SYSTEM_PROMPT, extract_prompt, temperature=0.0, max_tokens=768)
-                                        match = re.search(r"\{.*\}", raw_json, re.DOTALL)
-                                        if match:
-                                            plan = QueryExtractionPlan(**json.loads(match.group(0)))
-                                            resolution = DeterministicResolver.validate_and_filter(plan, query_to_run)
-                                            if resolution.get("status") == "MATCH" and resolution.get("metrics"):
-                                                pydantic_matched = True
-                                                verified_metrics_str = "\n".join([
-                                                    f"- Entity: {m.entity}, Type: {m.metric_type}, "
-                                                    f"Value: {m.string_value if m.string_value else f'{m.value:,.0f} {m.unit}'}, "
-                                                    f"Scope: {m.temporal_scope}, Cumulative: {m.is_cumulative}"
-                                                    for m in resolution["metrics"]
-                                                ])
-                                                calc_details = verified_metrics_str
-                                    except Exception as e:
-                                        print(f"  -> Pydantic Çıkarım/Eşleme Atlandı: {e}", flush=True)
-
-                                    if pydantic_matched:
-                                        if target_lang == "tr":
-                                            s_system = get_factual_synthesis_prompt("tr")
-                                            synthesis_prompt = (
-                                                f"Doğrulanmış Rapor Metrikleri:\n{verified_metrics_str}\n\n"
-                                                f"Soru: {query_to_run}\n\n"
-                                                f"Doğrudan Türkçe Yönetici Özeti ve Yanıt:"
-                                            )
-                                        else:
-                                            s_system = get_factual_synthesis_prompt("en")
-                                            synthesis_prompt = (
-                                                f"Verified Report Metrics:\n{verified_metrics_str}\n\n"
-                                                f"Question: {query_to_run}\n\n"
-                                                f"Direct Executive Answer:"
-                                            )
-                                        stream_gen = query_foundry_stream(s_system, synthesis_prompt)
+                                if pydantic_matched:
+                                    if target_lang == "tr":
+                                        s_system = get_factual_synthesis_prompt("tr")
+                                        synthesis_prompt = (
+                                            f"Doğrulanmış Rapor Metrikleri:\n{verified_metrics_str}\n\n"
+                                            f"Soru: {query_to_run}\n\n"
+                                            f"Doğrudan Türkçe Yönetici Özeti ve Yanıt:"
+                                        )
                                     else:
-                                        context_str = "\n\n".join(context_chunks)
-                                        if target_lang == "tr":
-                                            show_live_status(status_placeholder, "Rapor verileri analiz ediliyor ve Türkçe yönetici özeti sentezleniyor")
-                                            en_q = search_query if search_query != query_to_run else query_to_run
-                                            factual_en = query_foundry(
-                                                "You are a Senior Sustainability Analyst. Based ONLY on the provided Microsoft context, compose a concise, high-density factual summary (2-3 sentences) with exact numbers, units, and initiatives. Retain all names and metrics without redundancy. If information is not in context, output 'NOT_FOUND'.",
-                                                f"Context:\n{context_str}\n\nQuestion: {en_q}\n\nFactual Summary:",
-                                                temperature=0.1
-                                            )
-                                            if "NOT_FOUND" in factual_en and len(factual_en.strip()) < 25:
-                                                stream_gen = stream_static_text(not_found_msg)
-                                            else:
-                                                summary_system = (
-                                                    "Sen uzman bir Sürdürülebilirlik Baş Danışmanısın. Aşağıda verilen doğrulanmış İngilizce rapor bulgularını kullanarak soruyu; 1-2 cümlelik akıcı bir Yönetici Özeti ve ardından önemli bulguları içeren son derece duru, kurumsal ve doğal bir Türkçe ile yanıtla. "
-                                                    "Teknik verileri, birimleri (mtCO2e, GW, MWh, %) ve şirket hedeflerini tam olarak koru. Soruyu baştan tekrar etme, çeviri kokan veya devrik cümlelerden kesinlikle kaçın. Tekrara düşme."
-                                                )
-                                                user_prompt_formatted = (
-                                                    f"Soru: {query_to_run}\n\nDoğrulanmış Rapor Bulguları:\n{factual_en}\n\nDoğrudan Türkçe Yönetici Özeti ve Yanıt:"
-                                                )
-                                                stream_gen = query_foundry_stream(
-                                                    summary_system,
-                                                    user_prompt_formatted
-                                                )
+                                        s_system = get_factual_synthesis_prompt("en")
+                                        synthesis_prompt = (
+                                            f"Verified Report Metrics:\n{verified_metrics_str}\n\n"
+                                            f"Question: {query_to_run}\n\n"
+                                            f"Direct Executive Answer:"
+                                        )
+                                    stream_gen = query_foundry_stream(s_system, synthesis_prompt)
+                                else:
+                                    context_str = "\n\n".join(context_chunks)
+                                    if target_lang == "tr":
+                                        show_live_status(status_placeholder, "Rapor verileri analiz ediliyor ve Türkçe yönetici özeti sentezleniyor")
+                                        en_q = search_query if search_query != query_to_run else query_to_run
+                                        factual_en = query_foundry(
+                                            "You are a Senior Sustainability Analyst. Based ONLY on the provided Microsoft context, compose a concise, high-density factual summary (2-3 sentences) with exact numbers, units, and initiatives. Retain all names and metrics without redundancy. If information is not in context, output 'NOT_FOUND'.",
+                                            f"Context:\n{context_str}\n\nQuestion: {en_q}\n\nFactual Summary:",
+                                            temperature=0.1
+                                        )
+                                        if "NOT_FOUND" in factual_en and len(factual_en.strip()) < 25:
+                                            stream_gen = stream_static_text(not_found_msg)
                                         else:
                                             summary_system = (
-                                                "You are a senior Sustainability Advisor. Using ONLY the provided official Microsoft report context, explain clearly with a 1-2 sentence human-friendly Executive Summary followed by key findings or reported actions in fluent, professional English. Retain all exact metrics and units without redundant repetition. If not in context, state 'I cannot find information regarding this in the provided Microsoft Environmental Sustainability reports.'"
+                                                "Sen uzman bir Sürdürülebilirlik Baş Danışmanısın. Aşağıda verilen doğrulanmış İngilizce rapor bulgularını kullanarak soruyu; 1-2 cümlelik akıcı bir Yönetici Özeti ve ardından önemli bulguları içeren son derece duru, kurumsal ve doğal bir Türkçe ile yanıtla. "
+                                                "Teknik verileri, birimleri (mtCO2e, GW, MWh, %) ve şirket hedeflerini tam olarak koru. Soruyu baştan tekrar etme, çeviri kokan veya devrik cümlelerden kesinlikle kaçın. Tekrara düşme."
                                             )
                                             user_prompt_formatted = (
-                                                f"Context:\n{context_str}\n\nQuestion: {query_to_run}\n\nExecutive Answer:"
+                                                f"Soru: {query_to_run}\n\nDoğrulanmış Rapor Bulguları:\n{factual_en}\n\nDoğrudan Türkçe Yönetici Özeti ve Yanıt:"
                                             )
                                             stream_gen = query_foundry_stream(
                                                 summary_system,
                                                 user_prompt_formatted
                                             )
+                                    else:
+                                        summary_system = (
+                                            "You are a senior Sustainability Advisor. Using ONLY the provided official Microsoft report context, explain clearly with a 1-2 sentence human-friendly Executive Summary followed by key findings or reported actions in fluent, professional English. Retain all exact metrics and units without redundant repetition. If not in context, state 'I cannot find information regarding this in the provided Microsoft Environmental Sustainability reports.'"
+                                        )
+                                        user_prompt_formatted = (
+                                            f"Context:\n{context_str}\n\nQuestion: {query_to_run}\n\nExecutive Answer:"
+                                        )
+                                        stream_gen = query_foundry_stream(
+                                            summary_system,
+                                            user_prompt_formatted
+                                        )
 
-                        # Bekleme belirtecini temizle, rozeti yerleştir ve akışı başlat
-                        status_placeholder.empty()
+                    # Bekleme belirtecini temizle, rozeti yerleştir ve akışı başlat
+                    status_placeholder.empty()
 
-                        if route_type == "pal":
-                            badge_placeholder.markdown(f":green-badge[{T['badge_pal']}]")
-                        else:
-                            badge_placeholder.markdown(f":blue-badge[{T['badge_rag']}]")
+                    if route_type == "pal":
+                        badge_placeholder.markdown(f":green-badge[{T['badge_pal']}]")
+                    else:
+                        badge_placeholder.markdown(f":blue-badge[{T['badge_rag']}]")
 
-                        # ⚡ Canlı Akışlı Yanıt Yazımı (Streaming Output)
-                        ans = st.write_stream(stream_gen)
+                    # ⚡ Canlı Akışlı Yanıt Yazımı (Streaming Output)
+                    ans = st.write_stream(stream_gen)
 
-                        latency = time.time() - start_time
-                        print(f"  [OK] Yanıt Başarıyla Tamamlandı (Gecikme: {latency:.2f}s)\n", flush=True)
+                    latency = time.time() - start_time
+                    print(f"  [OK] Yanıt Başarıyla Tamamlandı (Gecikme: {latency:.2f}s)\n", flush=True)
 
-                        # 🌟 Sürdürülebilirlik Uyum & Aksiyon Kartı (ESG Insight)
-                        insight = get_esg_impact_insight(query_to_run, ans, target_lang)
-                        if insight:
-                            with st.container(border=True):
-                                st.markdown(f"#### :material/eco: **{insight['title']}**")
-                                ci1, ci2 = st.columns([1, 2])
-                                with ci1:
-                                    st.caption("ESG Sütunu & Hedef" if target_lang == "tr" else "ESG Pillar & Target")
-                                    st.markdown(f"**{insight['pillar']}**\n\n🎯 *{insight['target']}*")
-                                with ci2:
-                                    st.caption("Microsoft Raporlanan Temel Aksiyonlar" if target_lang == "tr" else "Reported Microsoft Key Actions")
-                                    st.markdown(insight["actions"])
+                    # 🌟 Sürdürülebilirlik Uyum & Aksiyon Kartı (ESG Insight)
+                    insight = get_esg_impact_insight(query_to_run, ans, target_lang)
+                    if insight:
+                        with st.container(border=True):
+                            st.markdown(f"#### :material/eco: **{insight['title']}**")
+                            ci1, ci2 = st.columns([1, 2])
+                            with ci1:
+                                st.caption("ESG Sütunu & Hedef" if target_lang == "tr" else "ESG Pillar & Target")
+                                st.markdown(f"**{insight['pillar']}**\n\n🎯 *{insight['target']}*")
+                            with ci2:
+                                st.caption("Microsoft Raporlanan Temel Aksiyonlar" if target_lang == "tr" else "Reported Microsoft Key Actions")
+                                st.markdown(insight["actions"])
 
-                        if calc_details:
-                            with st.expander(T["verified_output_label"], icon=":material/verified:"):
-                                st.text(calc_details)
-                        if chunks:
-                            prov_title = T["provenance_label"].format(
-                                count=len(chunks),
-                                score=max_score,
-                                latency=latency
-                            )
-                            with st.expander(prov_title, icon=":material/library_books:"):
-                                for p in chunks:
-                                    st.markdown(f"**{p['title']}** (Score / Skor: {p['score']:.4f})")
-                                    st.text(p["content"][:300] + "...")
+                    if calc_details:
+                        with st.expander(T["verified_output_label"], icon=":material/verified:"):
+                            st.text(calc_details)
+                    if chunks:
+                        prov_title = T["provenance_label"].format(
+                            count=len(chunks),
+                            score=max_score,
+                            latency=latency
+                        )
+                        with st.expander(prov_title, icon=":material/library_books:"):
+                            for p in chunks:
+                                st.markdown(f"**{p['title']}** (Score / Skor: {p['score']:.4f})")
+                                st.text(p["content"][:300] + "...")
 
-                        st.session_state.messages.append({
-                            "role": "assistant",
-                            "content": ans,
-                            "route": route_type,
-                            "intent": intent,
-                            "calc_details": calc_details,
-                            "provenance": chunks,
-                            "insight": insight,
-                            "max_score": max_score,
-                            "latency": latency
-                        })
-                        gc.collect()
-                        st.rerun()
+                    st.session_state.messages.append({
+                        "role": "assistant",
+                        "content": ans,
+                        "route": route_type,
+                        "intent": intent,
+                        "calc_details": calc_details,
+                        "provenance": chunks,
+                        "insight": insight,
+                        "max_score": max_score,
+                        "latency": latency
+                    })
+                    gc.collect()
+                    st.rerun()
 
-                    except Exception as e:
-                        status_placeholder.empty()
-                        st.error(f"Error / Hata: {e}")
-                        print(f"  [HATA] Sorgu işlenirken istisna oluştu: {e}", flush=True)
-                        gc.collect()
+                except Exception as e:
+                    status_placeholder.empty()
+                    err_text = f"Error / Hata: {e}"
+                    st.error(err_text)
+                    print(f"  [HATA] Sorgu işlenirken istisna oluştu: {e}", flush=True)
+                    st.session_state.messages.append({
+                        "role": "assistant",
+                        "content": err_text,
+                        "route": "error"
+                    })
+                    gc.collect()
 
 # ══════════════════════════════════════════════════════════════════════════════
 # SEKME 2: ESG BİLANÇO PANELİ (DASHBOARD)
