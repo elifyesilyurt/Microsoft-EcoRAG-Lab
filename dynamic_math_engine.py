@@ -181,10 +181,11 @@ def is_mathematical_query(query: str) -> bool:
     """Sorgunun matematiksel hesaplama, karşılaştırma veya toplama gerektirip gerektirmediğini tespit eder."""
     q = query.lower()
     math_signals = [
-        "toplam", "toplamı", "toplam kaç", "fark", "farkı", "kaç puan", "yüzde puan",
-        "artış", "azalış", "oran", "oranı", "yüzdesi", "yüzde kaç", "katı", "değişim",
-        "hesapla", "karşılaştır", "sum", "total", "difference", "delta", "ratio",
-        "percentage point", "percentage points", "increase", "decrease", "compare",
-        "higher", "lower", "how much more", "how much less"
+        r"\btoplam\b", r"\btoplamı\b", r"\btoplam kaç\b", r"\bfark\b", r"\bfarkı\b", r"\bkaç puan\b", r"\byüzde puan\b",
+        r"\bartış\b", r"\bazalış\b", r"\boran\b", r"\boranı\b", r"\byüzdesi\b", r"\byüzde kaç\b", r"\bkatı\b", r"\bdeğişim\b",
+        r"\bhesapla\b", r"\bkarşılaştır\b", r"\bsum\b", r"\btotal\b", r"\bdifference\b", r"\bdelta\b", r"\bratio\b",
+        r"\bpercentage point\b", r"\bpercentage points\b", r"\bincrease\b", r"\bdecrease\b", r"\bcompare\b",
+        r"\bhigher\b", r"\blower\b", r"\bhow much more\b", r"\bhow much less\b"
     ]
-    return any(signal in q for signal in math_signals)
+    return any(bool(re.search(pat, q)) for pat in math_signals)
+

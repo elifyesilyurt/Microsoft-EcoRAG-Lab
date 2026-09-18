@@ -204,28 +204,28 @@ def classify_esg_intent(query: str) -> str:
     q = query.lower()
 
     # 1. Packaging & Single-Use Plastic
-    if any(k in q for k in ["tek kullanımlık plastik", "single-use plastic", "ambalaj", "packaging"]) and any(k in q for k in ["oran", "percentage", "yolculuk", "düşüş", "trend", "2026", "2025", "0.07", "cihaz", "primer", "birincil"]):
+    if any(k in q for k in ["tek kullanımlık plastik", "single-use plastic", "ambalaj", "packaging", "plastic packaging"]) and any(k in q for k in ["oran", "percentage", "rate", "yolculuk", "trajectory", "düşüş", "reduction", "trend", "2026", "2025", "0.07", "cihaz", "device", "primer", "birincil", "primary"]):
         return "packaging_plastic"
 
     # 2. Zero Waste & Circularity
-    if any(k in q for k in ["sıfır atık", "zero waste", "circular center", "döngüsel", "donanım", "hardware", "ul 2799", "true zero", "atık"]) and any(k in q for k in ["standart", "standard", "sertifika", "yeniden kullanım", "reuse", "ömrü biten", "veri merkezi", "değişim", "kurtarılan", "merkezler"]):
+    if any(k in q for k in ["sıfır atık", "zero waste", "circular center", "döngüsel", "donanım", "hardware", "ul 2799", "true zero", "atık", "waste"]) and any(k in q for k in ["standart", "standard", "sertifika", "certificate", "certification", "yeniden kullanım", "reuse", "ömrü biten", "veri merkezi", "datacenter", "datacenters", "değişim", "kurtarılan", "merkezler", "diversion", "diverted", "progress", "rate"]):
         return "zero_waste_circularity"
 
     # 3. Carbon Removal Portfolio (Tablo 3 & Portföy Büyümesi)
-    if any(k in q for k in ["karbon uzaklaştırma", "carbon removal", "tablo 3", "table 3", "dac", "direct air capture", "biomass", "biyokütle", "uzaklaştırma portföy", "uzaklaştırma hacmi"]):
+    if any(k in q for k in ["karbon uzaklaştırma", "carbon removal", "cdr", "tablo 3", "table 3", "dac", "direct air capture", "biomass", "biyokütle", "uzaklaştırma portföy", "uzaklaştırma hacmi", "removal portfolio", "contracted carbon removal", "removal volume"]):
         return "carbon_removal"
 
     # 4. Carbon Commitments (2030, 2050, CFE, PPA)
-    if any(k in q for k in ["2030", "2050", "karbon negatif", "carbon negative", "tarihsel emisyon", "historical emission", "cfe", "karbonsuz elektrik", "ppa", "temiz enerji sözleşme", "taahhüt"]) and not any(k in q for k in ["kategori 1", "kategori 2", "scope 3 kat"]):
+    if any(k in q for k in ["2030", "2050", "karbon negatif", "carbon negative", "tarihsel emisyon", "historical emission", "historical emissions", "cfe", "karbonsuz elektrik", "carbon-free electricity", "ppa", "temiz enerji sözleşme", "clean energy", "power purchase", "taahhüt", "commitment", "commitments"]) and not any(k in q for k in ["kategori 1", "kategori 2", "scope 3 kat", "category 1", "category 2"]):
         return "carbon_commitments"
 
     # 5. Carbon Trend & Scopes & GHG Delta
-    if any(k in q for k in ["scope", "sera gazı", "emisyon", "emission"]) and any(k in q for k in ["trend", "artış", "kategori 1", "kategori 2", "cat 1", "cat 2", "toplam", "değiş", "büyüme", "fy20", "fy25", "fark", "pay"]):
+    if any(k in q for k in ["scope", "sera gazı", "emisyon", "emission", "emissions", "ghg"]) and any(k in q for k in ["trend", "artış", "increase", "growth", "kategori 1", "kategori 2", "category 1", "category 2", "cat 1", "cat 2", "toplam", "total", "değiş", "change", "delta", "büyüme", "fy20", "fy25", "fark", "difference", "pay", "share"]):
         return "carbon_trend_scope"
 
     # 6. Water Stewardship & Replenishment & Acoustic AI Leaks (use regex word boundary for 'su')
     is_water = bool(re.search(r"\bsu\b", q)) or any(k in q for k in ["water", "fido", "akustik sızıntı", "acoustic leak", "replenishment"])
-    if is_water and any(k in q for k in ["yenileme", "replenish", "hacim", "ikmal", "kaçak", "leak", "sızıntı", "belediye", "başarı", "hedef", "çekim", "withdrawal", "m³", "milyon m"]):
+    if is_water and any(k in q for k in ["yenileme", "replenish", "replenishment", "hacim", "volume", "ikmal", "kaçak", "leak", "leaks", "sızıntı", "belediye", "municipal", "başarı", "achievement", "hedef", "target", "çekim", "withdrawal", "m³", "milyon m", "million m"]):
         return "water_stewardship"
 
     # 7. Dinamik PoT Matematik Kontrolü
@@ -1187,7 +1187,13 @@ with st.sidebar:
         label_visibility="collapsed"
     )
     if selected_lang:
-        st.session_state.is_turkish = (selected_lang == "🇹🇷 TR")
+        new_is_turkish = (selected_lang == "🇹🇷 TR")
+        if new_is_turkish != st.session_state.is_turkish:
+            st.session_state.is_turkish = new_is_turkish
+            st.session_state.pop("sidebar_theme_pills", None)
+            st.session_state.pop("sidebar_year_filter_pills", None)
+            st.session_state.pop("sidebar_year_filter", None)
+            st.rerun()
     is_tr = st.session_state.is_turkish
 
     L = "tr" if is_tr else "en"
@@ -1210,6 +1216,8 @@ with st.sidebar:
     label_to_id = {(m["label_tr"] if is_tr else m["label_en"]): m["id"] for m in theme_meta}
 
     current_label = id_to_label.get(st.session_state.theme_id, theme_options[0])
+    if st.session_state.get("sidebar_theme_pills") not in theme_options:
+        st.session_state.pop("sidebar_theme_pills", None)
 
     selected_pill = st.pills(
         T["theme_label"],
@@ -1226,16 +1234,20 @@ with st.sidebar:
     st.markdown(f"<div class='sidebar-section-title' style='margin-bottom: 6px;'>{'RAPOR YILI FİLTRESİ' if is_tr else 'REPORT YEAR FILTER'}</div>", unsafe_allow_html=True)
     year_options_map = {
         ("Tümü (Otomatik)" if is_tr else "All (Auto-Stratified)"): None,
-        "2026 Raporu": "2026",
-        "2025 Raporu": "2025",
-        "2024 Raporu": "2024"
+        ("2026 Raporu" if is_tr else "2026 Report"): "2026",
+        ("2025 Raporu" if is_tr else "2025 Report"): "2025",
+        ("2024 Raporu" if is_tr else "2024 Report"): "2024"
     }
-    if "sidebar_year_filter" not in st.session_state:
-        st.session_state.sidebar_year_filter = list(year_options_map.keys())[0]
+    all_year_options = list(year_options_map.keys())
+    if "sidebar_year_filter" not in st.session_state or st.session_state.sidebar_year_filter not in all_year_options:
+        st.session_state.sidebar_year_filter = all_year_options[0]
+
+    if st.session_state.get("sidebar_year_filter_pills") not in all_year_options:
+        st.session_state.pop("sidebar_year_filter_pills", None)
 
     selected_year_label = st.pills(
         "Report Year",
-        options=list(year_options_map.keys()),
+        options=all_year_options,
         default=st.session_state.sidebar_year_filter,
         key="sidebar_year_filter_pills",
         label_visibility="collapsed"
