@@ -83,32 +83,37 @@ def get_synthesis_prompt(lang: str = "tr") -> str:
     if lang == "tr":
         return """Sen uzman bir Sürdürülebilirlik Baş Analistisin.
 Aşağıda verilen doğrulanmış analitik hesaplama ve rapor verilerini kullanarak soruyu yanıtla.
-TÜRKÇE DİL VE ANLATIM KURALLARI:
-1. Yanıtını duru, akıcı, kurumsal ve tamamen doğal bir Türkçe ile yaz.
-2. İngilizce'den motamot/kelime kelime yapılmış çeviri kokan anlatımlardan ve devrik cümlelerden kesinlikle kaçın. Cümlelerini doğal özne-nesne-yüklem yapısıyla kur.
-3. Doğrulanmış sayısal verileri, birimleri (mtCO2e, metrik ton, m3, MWh vb.) ve teknik kavramları (Scope 1, Scope 2, Scope 3, Net Sıfır) değiştirmeden, cümle akışına uygun şekilde kullan.
-4. Yanıtı 1-2 cümlelik net bir Yönetici Özeti ve gerekiyorsa temel bulguları maddeler halinde sunacak şekilde yapılandır. Kendini asla tekrar etme.
-5. Gerekli yerlerde (birden fazla metrik, karşılaştırma veya kategori dağılımı içerdiğinde) verileri okunabilir, şık bir Markdown Tablosu (`| Kategori / Metrik | Değer | Birim / Durum |`) ile özetleyerek sun."""
+STANDART CEVAP ŞABLONU VE ANLATIM KURALLARI:
+1. Yanıtını MUTLAKA şu 3 standart bölümde yapılandır:
+   - '### 🎯 Doğrudan Yanıt': Sorunun geçerli, kesin ve doğrudan cevabını İLK CÜMLEDE açıkça ver. Aranan rakam, oran, kurum veya sonucu en başta vurgula.
+   - '### 📊 Doğrulanmış Rapor Tablosu & Veri Detayı': Raporlanan verileri, metrikleri veya karşılaştırmaları temiz bir Markdown tablosu olarak sun.
+   - '### 💡 Stratejik Aksiyon & Raporlanan İlerleme': Microsoft'un raporda bildirdiği temel kurumsal aksiyonu 1-2 kısa maddede özetle.
+2. Gereksiz giriş cümlelerinden, dolgu ifadelerinden ve soruyu baştan tekrarlamaktan kesinlikle kaçın.
+3. Motamot/kelime kelime yapılmış çeviri kokan anlatımlardan kaçın; akıcı ve kurumsal bir Türkçe kullan.
+4. Doğrulanmış sayısal verileri ve birimleri (mtCO2e, metrik ton, m³, MWh, %) değiştirmeden kullan."""
     else:
         return """You are a Senior Sustainability Analyst.
-Synthesize the verified analytical calculation results into a clear, structured executive report in English with exact units (mtCO2e / metric tons / m3).
-Where appropriate (multi-metric data, comparisons, or category breakdowns), format the key figures into a clean, well-aligned Markdown table.
-Do not alter any calculated numbers. Do not repeat yourself."""
+You MUST structure your response into these 3 standardized sections:
+1. '### 🎯 Direct Answer': Provide the exact, valid answer to the question immediately in the very first 1-2 sentences.
+2. '### 📊 Verified Metrics & Report Findings Table': Present multi-metric figures, comparisons, or categories in a clean Markdown table.
+3. '### 💡 Strategic Action & Progress': Summarize core Microsoft initiatives in 1-2 concise bullet points.
+Avoid repetitive filler, preamble, or question restatement. Keep exact figures and units intact."""
 
 def get_factual_synthesis_prompt(lang: str = "tr") -> str:
     if lang == "tr":
         return """Sen uzman bir Sürdürülebilirlik Baş Analistisin.
-Aşağıda verilen doğrulanmış metrikleri kullanarak doğrudan, akıcı, kurumsal ve dil bilgisi kurallarına uygun bir Türkçe yanıt oluştur.
-TÜRKÇE ANLATIM KURALLARI:
-1. Kesinlikle soruyu baştan tekrar ederek başlama. Doğrudan özeti ve doğrulanmış bulguyu açıkla.
-2. Motamot çeviri veya mekanik/devrik ifadeler kullanma; kurumsal, net ve doğal bir Türkçe ile ifade et.
-3. İlgili sayısal değeri, yılı ve birimi (mtCO2e, m3, GW, MWh, % vb.) net bir şekilde cümleye yerleştir.
-4. Karşılaştırmalı veya çoklu veri bulunuyorsa uygun yerlerde Markdown Tablosu kullanarak kullanıcı dostu bir sunum yap.
-5. Kesinlikle aynı kalıp veya kelimeleri tekrarlama; döngüye girme. Cevabını 2-3 akıcı cümlede tamamla."""
+Aşağıda verilen doğrulanmış metrikleri kullanarak doğrudan, akıcı, kurumsal bir Türkçe yanıt oluştur.
+STANDART CEVAP DÜZENİ:
+1. '### 🎯 Doğrudan Yanıt': Sorunun geçerli, kesin cevabını İLK OLARAK 1-2 cümlede doğrudan açıkla. Sayısal değeri veya olguyu en başta ver.
+2. '### 📊 Doğrulanmış Metrik & Veri Tablosu': İlgili verileri temiz ve hizalı bir Markdown Tablosu ile özetle.
+3. '### 💡 Stratejik Aksiyon': 1 kısa maddede Microsoft'un resmi rapordaki aksiyonunu sun.
+Asla soruyu baştan tekrar etme, gereksiz laf kalabalığından kaçın."""
     else:
         return """You are a Senior Sustainability AI Analyst.
-Using the verified structured metrics provided below, compose a concise, direct natural language answer in English.
-State the exact numbers, names, and corresponding units clearly. Format multi-metric data into clear Markdown tables where helpful. Do not repeat the question, phrases, or enter loops."""
+Structure your response in this standard 3-part layout:
+1. '### 🎯 Direct Answer': State the exact, valid answer to the question immediately in the first sentence.
+2. '### 📊 Verified Metrics Table': Present metrics and data in a clean Markdown table.
+3. '### 💡 Strategic Action': Provide 1-2 concise bullet points on corporate action without filler."""
 
 def detect_query_language(query: str, default_lang: str = "tr") -> str:
     if not query:
@@ -547,8 +552,8 @@ def compute_carbon_trend_summary(lang: str = "tr") -> str:
 
     if lang == "tr":
         lines = [
-            "### 📌 Yönetici Özeti (Sera Gazı Emisyon Trendi)",
-            f"> Microsoft'un FY20 baz yılından FY25'e kadar olan sera gazı emisyonları incelendiğinde; küresel bulut ve yapay zeka veri merkezi altyapı yatırımları nedeniyle toplam emisyon hacminde **+{tot_delta:,} mtCO2e (+%{tot_pct:.2f})** büyüme kaydedilmiştir. Şirket, bu artışı dengelemek için tedarik zincirinde katı temiz enerji şartı ve 21.9M tonluk rekor karbon uzaklaştırma sözleşmeleri uygulamaktadır.",
+            "### 🎯 Doğrudan Yanıt & 📌 Yönetici Özeti",
+            f"> **Net Cevap:** FY20 baz yılından FY25'e kadar Microsoft'un toplam sera gazı emisyonları (Scope 1+2+3) net **+{tot_delta:,} mtCO2e (+%{tot_pct:.2f})** artarak 13,061,000'den 21,121,000 mtCO2e'ye yükselmiştir. Bu artışın ana itici gücü Scope 3 emisyonları olup, en büyük iki pay **%{cat2_share}** ile Kategori 2 (Sermaye Malları) ve **%{cat1_share}** ile Kategori 1'e (Satın Alınan Mal/Hizmetler) aittir (ikisinin toplam payı: **%{combined_share}**).",
             "",
             "### 📊 Doğrulanmış Emisyon Değişimi & Sera Gazı Karşılaştırma Tablosu (FY20 Baseline ➔ FY24 ➔ FY25)",
             "",
@@ -570,12 +575,13 @@ def compute_carbon_trend_summary(lang: str = "tr") -> str:
             f"| 🎯 **Toplam Scope 3 Hacmi** | Tüm Değer Zinciri Kümülatif | `{int(s3['FY25']):,} mtCO2e` | **%100.0** |",
             "",
             "### 💡 Stratejik Önlem & Aksiyon",
-            "Microsoft, bu değer zinciri artışını nötrlemek amacıyla 21.9 milyon tonluk rekor bir karbon uzaklaştırma portföyü sözleşmesi imzalamış ve 2030 Karbon Negatif hedefi doğrultusunda 34 GW'ı aşan temiz enerji alım anlaşması (PPA) yapmıştır."
+            "* **Karbon Uzaklaştırma:** Microsoft, bu değer zinciri artışını nötrlemek amacıyla 21.9 milyon tonluk rekor bir karbon uzaklaştırma portföyü sözleşmesi imzalamıştır.",
+            "* **Temiz Enerji Tedariki:** 2030 Karbon Negatif hedefi doğrultusunda 34 GW'ı aşan temiz enerji alım anlaşması (PPA) yapılmıştır."
         ]
     else:
         lines = [
-            "### 📌 Executive Takeaway (GHG Emissions Trend)",
-            f"> Between FY20 baseline and FY25, Microsoft experienced total greenhouse gas emission growth of **+{tot_delta:,} mtCO2e (+{tot_pct:.2f}%)**, driven primarily by global datacenter expansion and AI compute infrastructure. To counterbalance this trajectory, Microsoft enforces strict clean-energy supplier mandates and contracted a record 21.9M mtCO2e carbon removal portfolio.",
+            "### 🎯 Direct Answer & 📌 Executive Takeaway",
+            f"> **Direct Answer:** Between FY20 baseline and FY25, Microsoft experienced total greenhouse gas emission growth of **+{tot_delta:,} mtCO2e (+{tot_pct:.2f}%)**, rising from 13,061,000 to 21,121,000 mtCO2e. The primary driver was Scope 3 value chain emissions, dominated by Category 2 Capital Goods (**{cat2_share}%**) and Category 1 Purchased Goods (**{cat1_share}%**), combining for **{combined_share}%** of all Scope 3.",
             "",
             "### 📊 Verified GHG Emissions Comparison Table (FY20 Baseline ➔ FY24 ➔ FY25)",
             "",
@@ -597,16 +603,17 @@ def compute_carbon_trend_summary(lang: str = "tr") -> str:
             f"| 🎯 **Total Scope 3 Volume** | Cumulative Value Chain Inventory | `{int(s3['FY25']):,} mtCO2e` | **100.0%** |",
             "",
             "### 💡 Strategic Context & Corporate Action",
-            "To counterbalance growth-induced emissions, Microsoft contracted a record 21.9 million mtCO2e carbon removal portfolio and secured over 34 GW of clean energy PPAs on the path toward Carbon Negative 2030."
+            "* **Carbon Removal:** Contracted a record 21.9 million mtCO2e carbon removal portfolio.",
+            "* **Clean Power:** Secured over 34 GW of clean energy PPAs toward Carbon Negative 2030."
         ]
     return "\n".join(lines)
 
 def compute_carbon_commitments_summary(lang: str = "tr") -> str:
     if lang == "tr":
-        return """### 📌 Yönetici Özeti (2030 & 2050 Kurumsal Karbon Taahhütleri)
-> Microsoft, iklim kriziyle mücadelede teknoloji sektörünün en kapsamlı taahhütlerini açıklamıştır: **2030 Karbon Negatif**, **2050 Tarihsel Emisyon Telafisi** ve **%100 Karbonsuz Elektrik (CFE)**.
+        return """### 🎯 Doğrudan Yanıt & 📌 Yönetici Özeti
+> **Net Cevap:** Microsoft'un resmi raporlardaki temel karbon ve temiz enerji taahhütleri; **2030 yılına kadar Karbon Negatif olma**, **2050 yılına kadar 1975'ten beri salınan tüm tarihsel emisyonları telafi etme** ve operasyonlarını **%100 Karbonsuz Elektrik (CFE)** ile eşleştirmedir. Büyüyen elektrik tüketimi 43.8M MWh'a çıkarken temiz enerji portföyü **34 GW** PPA kapasitesine ulaşmıştır.
 
-### 🎯 Kurumsal Karbon ve Temiz Enerji Taahhütleri Tablosu (2024–2026 Raporları)
+### 📊 Doğrulanmış Kurumsal Karbon ve Temiz Enerji Taahhütleri Tablosu (2024–2026 Raporları)
 
 | Taahhüt & Stratejik Hedef | Hedef Yılı | Kapsam & Detaylar | Doğrulanmış Durum (FY25) |
 | :--- | :---: | :--- | :--- |
@@ -616,11 +623,12 @@ def compute_carbon_commitments_summary(lang: str = "tr") -> str:
 | 🔌 **Elektrik & PPA Kapasite Trendi** | Sürekli | Büyüyen veri merkezi tüketimini temiz enerji alım anlaşmalarıyla (PPA) karşılama | Tüketim 43.8M MWh'a çıkarken **34 GW** PPA portföyüne ulaşıldı |
 | 🤝 **Değer Zinciri (Scope 3) Şartı** | **2030** | Scope 3 emisyonlarını %50'den fazla azaltma | Büyük tedarikçilere %100 karbonsuz elektrik kullanma zorunluluğu |
 
-### 💡 Stratejik Önlem & Raporlanan İlerleme
-Bu hedefleri desteklemek amacıyla Microsoft, dünyanın en büyük kurumsal kalıcı Karbon Uzaklaştırma (CDR) portföyünü (21.9M+ mtCO2e) ve 34 GW'ı aşan küresel temiz enerji anlaşmasını (PPA) hayata geçirmiştir."""
+### 💡 Stratejik Önlem & Aksiyon
+* **Karbon Uzaklaştırma:** Dünyanın en büyük kurumsal kalıcı CDR portföyü olan 21.9M+ mtCO2e sözleşmeye bağlanmıştır.
+* **Temiz Enerji Güvencesi:** 34 GW'ı aşan küresel PPA anlaşmasıyla veri merkezi temiz enerji arzı güvenceye alınmıştır."""
     else:
-        return """### 📌 Executive Summary (2030 & 2050 Corporate Carbon Commitments)
-> Microsoft has established industry-leading sustainability commitments across its 2024–2026 reports: **Carbon Negative by 2030**, **Historical Emissions Compensation by 2050**, and **100% Carbon-Free Electricity (CFE)**.
+        return """### 🎯 Direct Answer & 📌 Executive Summary
+> **Direct Answer:** Microsoft's corporate commitments across its 2024–2026 sustainability reports target **Carbon Negative by 2030**, **Historical Emissions Compensation by 2050** (covering all emissions since 1975), and matching datacenter operations with **100% Carbon-Free Electricity (CFE)** backed by a **34 GW** PPA portfolio against 43.8M MWh electricity consumption.
 
 ### 🎯 Corporate Carbon & Clean Energy Commitments Table
 
@@ -633,12 +641,13 @@ Bu hedefleri desteklemek amacıyla Microsoft, dünyanın en büyük kurumsal kal
 | 🤝 **Scope 3 Value Chain Mandate** | **2030** | Target to cut Scope 3 value chain emissions by more than 50% | Mandating 100% clean electricity requirements for key suppliers |
 
 ### 💡 Strategic Governance & Progress
-Backed by the world's largest corporate carbon dioxide removal portfolio (21.9M+ mtCO2e) and over 34 GW of contracted renewable energy PPAs."""
+* **Carbon Removal Scale:** Supported by 21.9M+ mtCO2e contracted carbon dioxide removal.
+* **Energy Procurement:** Over 34 GW in signed renewable power purchase agreements."""
 
 def compute_carbon_removal_summary(lang: str = "tr") -> str:
     if lang == "tr":
-        return """### 📌 Yönetici Özeti (Karbon Uzaklaştırma Portföyü)
-> Microsoft, 2030 yılına kadar karbon negatif olma taahhüdünü desteklemek için 2025 raporunda **21,927,370 mtCO2e** hacminde dünyanın en büyük kurumsal karbon uzaklaştırma portföyünü sözleşmeye bağlamıştır. Bu hacim, 2024 raporundaki 5,015,019 tona kıyasla **4.37 kat artış** anlamına gelmektedir.
+        return """### 🎯 Doğrudan Yanıt & 📌 Yönetici Özeti
+> **Net Cevap:** 2025 raporundaki Karbon Tablosu 3'e göre Microsoft'un sözleşmeye bağlanan toplam karbon uzaklaştırma hacmi **21,927,370 mtCO2e** olup, 2024 raporundaki 5,015,019 tona kıyasla **4.37 kat artış** göstermiştir. Portföyde en büyük paya sahip ilk iki teknoloji grubu sırasıyla **Orman/Doğa tabanlı (~8.54M mtCO2e, %38.9)** ve **Biyokütle/BECCS (~5.13M mtCO2e, %23.4)** çözümleridir.
 
 ### 🔬 Teknoloji Türlerine Göre Portföy Dağılım Tablosu (2025 Raporu, Tablo 3)
 
@@ -659,10 +668,10 @@ def compute_carbon_removal_summary(lang: str = "tr") -> str:
 | **2031 Sonrası ve Geçmiş Taahhütler** | `17,432,374 mtCO2e` | 2050 tarihsel telafi ve uzun vadeli teslimatlar |
 
 ### 💡 Stratejik Önlem & Aksiyon
-Kalıcı CDR teknolojilerinin ticarileşmesini hızlandırmak için Microsoft, Direct Air Capture ve mineralizasyon gibi yüksek dayanıklılıklı çözümlere doğrudan sermaye ve çok yıllı alım garantisi sağlamaktadır."""
+* **Piyasa Katalizörü:** Direct Air Capture ve mineralizasyon gibi kalıcı çözümlere çok yıllı alım garantisi sağlanmaktadır."""
     else:
-        return """### 📌 Executive Summary (Carbon Removal Portfolio)
-> To reinforce its commitment to becoming carbon negative by 2030, Microsoft contracted **21,927,370 mtCO2e** of carbon removal in the 2025 report—a **4.37x growth** over 5,015,019 tons reported in 2024.
+        return """### 🎯 Direct Answer & 📌 Executive Summary
+> **Direct Answer:** According to Carbon Table 3 in the 2025 report, Microsoft contracted **21,927,370 mtCO2e** in carbon removal—a **4.37x growth** over 5,015,019 tons reported in 2024. The top two technology categories are **Nature-based (~8.54M mtCO2e, 38.9%)** and **Biomass/BECCS (~5.13M mtCO2e, 23.4%)**.
 
 ### 🔬 Portfolio Breakdown by Technology Type (2025 Report, Table 3)
 
@@ -683,12 +692,12 @@ Kalıcı CDR teknolojilerinin ticarileşmesini hızlandırmak için Microsoft, D
 | **Post-2031 & Historical Commitments** | `17,432,374 mtCO2e` | Multi-decade contracted deliveries for 2050 historical compensation |
 
 ### 💡 Strategic Action
-Microsoft catalyses the market for novel, highly durable carbon removal technologies by providing long-term advance market commitments for Direct Air Capture and mineral carbonation."""
+* **Advance Market Commitments:** Catalysing the market for novel, highly durable Direct Air Capture and mineral carbonation solutions."""
 
 def compute_zero_waste_summary(lang: str = "tr") -> str:
     if lang == "tr":
-        return """### 📌 Yönetici Özeti (Sıfır Atık & Döngüsel Veri Merkezleri)
-> Microsoft, 2030 Sıfır Atık vizyonu kapsamında operasyonel atıkların en az **%90'ını** düzenli depolama ve yakma fırınlarından kurtarmayı taahhüt etmiştir. Sertifikalı veri merkezlerinin sayısı 10'dan 14'e çıkarılırken, Circular Centers aracılığıyla bulut donanımının **%89.4'ü** yeniden kullanıma kazandırılmıştır.
+        return """### 🎯 Doğrudan Yanıt & 📌 Yönetici Özeti
+> **Net Cevap:** 2024 ve 2026 raporları arasında UL 2799 Sıfır Atık sertifikalı veri merkezi sayısı **10'dan 14 tesise (+4 yeni tesis)** çıkmış, operasyonel olarak depolama alanlarından yönlendirilen atık miktarı 18,537 tondan **218,000 metrik tona (~11.8 kat)** yükselmiştir. Bulut donanımının **%89.4'ü** Microsoft Circular Centers ile yeniden kullanım zincirine kazandırılmıştır.
 
 ### 📊 Sıfır Atık ve Döngüsellik İlerleme Tablosu (2024–2026 Raporları)
 
@@ -700,10 +709,10 @@ def compute_zero_waste_summary(lang: str = "tr") -> str:
 | 🎯 **Operasyonel Atık Yönlendirme Hedefi** | %85+ | **%90 ve üzeri** | **2030 Hedef Uyumlu** | Silver (%90-94), Gold (%95-99), Platinum (%100) |
 
 ### 💡 Stratejik Önlem & Aksiyon
-Microsoft Circular Centers (Döngüsel Merkezler), kullanım ömrünü tamamlayan sunucu ve ağ donanımlarını hurdaya göndermek yerine bileşen bazında test edip yeniden kullanım zincirine kazandırmaktadır."""
+* **Döngüsel Merkezler:** Kullanım ömrünü tamamlayan sunucu ve ağ donanımları Circular Centers bünyesinde test edilerek yeniden kullanılır."""
     else:
-        return """### 📌 Executive Summary (Zero Waste & Datacenters)
-> Under its Zero Waste by 2030 commitment, Microsoft aims for at least **90% diversion** of operational waste away from landfills and incineration. Certified sites expanded from 10 to 14, while Circular Centers achieved an **89.4%** cloud hardware reuse/recycle rate.
+        return """### 🎯 Direct Answer & 📌 Executive Summary
+> **Direct Answer:** Between 2024 and 2026 reports, UL 2799 Zero Waste certified datacenters increased from **10 to 14 sites (+4 sites)**, operational waste diverted grew from 18,537 to **218,000 metric tons (~11.8x)**, and cloud hardware achieved an **89.4%** reuse/recycle rate via Circular Centers.
 
 ### 📊 Zero Waste & Circularity Progress Table (2024–2026 Reports)
 
@@ -715,12 +724,12 @@ Microsoft Circular Centers (Döngüsel Merkezler), kullanım ömrünü tamamlaya
 | 🎯 **2030 Diversion Target** | 85%+ | **90% and above** | **Target Aligned** | Silver (90-94%), Gold (95-99%), Platinum (100%) |
 
 ### 💡 Strategic Action
-Microsoft Circular Centers co-located at major datacenter hubs decommission, refurbish, and reuse server and networking components, keeping computing assets in circulation and minimizing electronic waste."""
+* **Circular Centers:** Co-located hardware refurbishment centers extend computing asset lifecycles and divert electronic waste from landfills."""
 
 def compute_packaging_summary(lang: str = "tr") -> str:
     if lang == "tr":
-        return """### 📌 Yönetici Özeti (Ambalaj ve Plastik Azaltımı)
-> 2026 Çevresel Sürdürülebilirlik Raporu'na göre Microsoft, birincil donanım ve cihaz ambalajlarındaki tek kullanımlık plastik kullanımını rekor seviyede **%0.07** düzeyine indirerek sıfıra yakın eşiğe ulaştırmıştır.
+        return """### 🎯 Doğrudan Yanıt & 📌 Yönetici Özeti
+> **Net Cevap:** 2026 Çevresel Sürdürülebilirlik Raporu'na göre Microsoft, birincil donanım ve cihaz ambalajlarındaki tek kullanımlık plastik kullanım oranını **%0.07** seviyesine indirerek sıfıra yakın eşiğe ulaştırmıştır (2025 raporundaki %4.2'den rekor düşüş). Süreçte kalıplanmış kağıt lifleri kullanılmış, UL Solutions denetimi ve UL 2799 standartları temel alınmıştır.
 
 ### 📦 3 Yıllık Ambalaj ve Plastik Azaltım İlerleme Tablosu
 
@@ -732,10 +741,10 @@ def compute_packaging_summary(lang: str = "tr") -> str:
 | 🎯 **2030 Kurumsal Hedef** | **%0.00** | **%100 Döngüsel** | %100 geri dönüştürülebilir döngüsel ambalaj | Küresel Sıfır Atık Taahhüdü |
 
 ### 💡 Stratejik Önlem & Aksiyon
-Cihaz ambalajlarında plastik tampon yerine kalıplanmış kağıt lifleri (molded fiber) ve su bazlı yapıştırıcı bantlar kullanılarak ambalajların doğrudan evsel kağıt geri dönüşümüne kazandırılması sağlanmıştır."""
+* **Kalıplanmış Kağıt Lifi:** Plastik tamponlar yerine molded fiber ve su bazlı yapıştırıcı bantlar kullanılarak ambalajlar evsel kağıt geri dönüşümüne uyumlu kılınmıştır."""
     else:
-        return """### 📌 Executive Summary (Packaging & Plastic Reduction)
-> According to the 2026 Environmental Sustainability Report, Microsoft has reduced single-use plastics in primary hardware and device packaging to **0.07%**, approaching near-zero plastic design.
+        return """### 🎯 Direct Answer & 📌 Executive Summary
+> **Direct Answer:** According to the 2026 Environmental Sustainability Report, Microsoft achieved a single-use plastic packaging rate of **0.07%** in primary hardware and devices, declining from 4.2% in 2025 and approaching near-zero plastic design.
 
 ### 📦 3-Year Packaging & Plastic Reduction Trajectory Table
 
@@ -747,12 +756,12 @@ Cihaz ambalajlarında plastik tampon yerine kalıplanmış kağıt lifleri (mold
 | 🎯 **2030 Target** | **0.00%** | **100% Circular Design** | Completely recyclable fiber-based packaging | Corporate Zero Waste Target |
 
 ### 💡 Strategic Action
-Engineered molded fiber cushioning and FSC-certified paper tapes have replaced conventional plastic foams and tape across Surface and Xbox product lines."""
+* **Molded Fiber Pulp:** Molded fiber pulp cushioning replaces petroleum-based foams across Surface and Xbox product packaging."""
 
 def compute_water_summary(lang: str = "tr") -> str:
     if lang == "tr":
-        return """### 📌 Yönetici Özeti (Su Yönetimi & Su Pozitifliği)
-> Microsoft, 2030 yılına kadar **"Su Pozitif" (Water Positive)** olma hedefi kapsamında doğrudan operasyonlarında tükettiği su miktarından daha fazlasını yerel havzalara geri kazandırmaktadır. FY25 itibarıyla kümülatif sözleşmeli su ikmal hacmi **125.0 milyon m³** seviyesine, yenileme hedef gerçekleştirme oranı ise **%82.1**'e yükselmiştir.
+        return """### 🎯 Doğrudan Yanıt & 📌 Yönetici Özeti
+> **Net Cevap:** 2026 raporu ve Su Tablosu 1 verilerine göre Microsoft'un kümülatif sözleşmeli su ikmal hacmi **125.0 milyon m³**'tür. FY25 yılında tamamlanan 7,800 milyon m³ yenileme hacmi ile 9,500M m³ hedef üzerinden gerçekleşme oranı **%82.1**'e yükselmiştir (FY24 %68.9'a göre +13.2 puan artış). Şebeke sızıntılarını yapay zekayla tespit etmek için FIDO Tech ile Londra, Querétaro ve Phoenix'te ortaklık yürütülmektedir.
 
 ### 💧 Su Yönetimi ve Hedef Gerçekleşme Metrik Tablosu (Su Tablosu 1)
 
@@ -770,10 +779,11 @@ def compute_water_summary(lang: str = "tr") -> str:
 | 🛰️ **FIDO Tech** | AI Destekli Akustik Sensör Analizi | 🇬🇧 **Londra (İngiltere)**<br>🇲🇽 **Querétaro (Meksika)**<br>🇺🇸 **Phoenix (ABD)** | Belediye dağıtım şebekelerinde yeraltı su borusu sızıntılarını noktasal tespit ederek su kaybını önleme |
 
 ### 💡 Stratejik Önlem & Aksiyon
-Veri merkezlerinde adyabatik ve kapalı devre soğutma sistemleri devreye alınırken, şebeke kayıplarını minimize etmek için FIDO Tech akustik kaçak tespit yapay zekası belediye su ağlarına entegre edilmiştir."""
+* **Akustik Kaçak AI:** FIDO Tech sensör yapay zekası ile şehir su şebekelerindeki kayıplar noktasal olarak tespit edilip önlenmektedir.
+* **Eko-Soğutma:** Veri merkezlerinde su tüketimini minimize eden adyabatik ve kapalı devre soğutmaya geçilmektedir."""
     else:
-        return """### 📌 Executive Summary (Water Stewardship & Replenishment)
-> Under its Water Positive by 2030 commitment, Microsoft replenishes more water than its operations consume worldwide. Cumulative contracted water replenishment reached **125.0 million m³**, with replenishment achievement climbing to **82.1%** in FY25.
+        return """### 🎯 Direct Answer & 📌 Executive Summary
+> **Direct Answer:** According to the 2026 report and Water Table 1, Microsoft's cumulative contracted water replenishment reached **125.0 million m³**, with replenishment achievement climbing to **82.1%** in FY25 (up +13.2 points from 68.9% in FY24). Microsoft deployed AI acoustic leak analysis in partnership with FIDO Tech across London, Querétaro, and Phoenix.
 
 ### 💧 Water Stewardship & Target Achievement Metrics Table (Water Table 1)
 
@@ -791,7 +801,8 @@ Veri merkezlerinde adyabatik ve kapalı devre soğutma sistemleri devreye alın�
 | 🛰️ **FIDO Tech** | AI-driven acoustic sensor analysis | 🇬🇧 **London (UK)**<br>🇲🇽 **Querétaro (Mexico)**<br>🇺🇸 **Phoenix (USA)** | Pinpointing underground distribution network leaks to conserve treated water |
 
 ### 💡 Strategic Action
-Microsoft deploys adiabatic cooling and innovative low-water data center designs while scaling AI-driven leak detection to reduce losses in municipal water infrastructure."""
+* **Acoustic AI Leak Detection:** FIDO Tech acoustic sensors identify hidden pipe leaks in municipal networks.
+* **Eco-Cooling:** Datacenter adiabatic cooling designs reduce freshwater withdrawal."""
 
 def search_context_hybrid(query: str, year_filter: Optional[str] = None):
     import unicodedata
@@ -3010,11 +3021,17 @@ with tab_chat:
                                 synth_prompt = (
                                     f"Doğrulanmış Kesin Matematik Verileri (Python ALU tarafından hesaplanmıştır):\n{calc_details}\n\n"
                                     f"Soru: {query_to_run}\n\n"
-                                    f"Lütfen yukarıdaki doğrulanmış hesaplama sonuçlarını kullanarak soruyu; dil bilgisi kurallarına tam uygun, çeviri kokmayan, duru ve akıcı bir Türkçe ile yanıtla. 1-2 cümlelik net bir Yönetici Özeti ve ardından önemli metrik maddelerini sun. Verilen sayıları ve birimleri tam olarak koru. Kesinlikle kendini tekrar etme."
+                                    f"Lütfen yanıtını her soru için standartlaştırılmış şu 3 bölümde sun:\n"
+                                    f"### 🎯 Doğrudan Yanıt\n> **Net Cevap:** Hesaplanmış kesin sonucu (farkı, toplamı veya oranı) İLK CÜMLEDE açıkça belirt.\n\n"
+                                    f"### 📊 Doğrulanmış Hesaplama & Değer Dağılım Tablosu\nİlgili tüm ara değişkenleri, girdileri ve sonuçları temiz bir Markdown tablosunda listele.\n\n"
+                                    f"### 💡 Stratejik Önlem & Rapor Özeti\n1-2 kısa maddede kurumsal bağlamı ve sonucu özetle. Gereksiz detaylardan kaçın."
                                     if target_lang == "tr" else
                                     f"Verified Exact Mathematical Results (Calculated via Python ALU):\n{calc_details}\n\n"
                                     f"Question: {query_to_run}\n\n"
-                                    f"Using the verified calculation results above, compose an executive, human-friendly and clear 2-3 sentence answer in English. Retain all numbers and units exactly without redundancy."
+                                    f"Please structure your response into these 3 standardized sections:\n"
+                                    f"### 🎯 Direct Answer\n> **Direct Answer:** State the exact calculated result upfront in the very first sentence.\n\n"
+                                    f"### 📊 Verified Computation & Metrics Table\nPresent all inputs and final outputs in a clean Markdown table.\n\n"
+                                    f"### 💡 Strategic Context\n1-2 concise bullet points on corporate context. Avoid unnecessary filler."
                                 )
                                 stream_gen = query_foundry_stream(f_prompt, synth_prompt)
                             else:
@@ -3049,16 +3066,12 @@ with tab_chat:
                                 print("  -> Benzerlik Eşiği Altında: Kayıt Bulunamadı", flush=True)
                                 stream_gen = stream_static_text(not_found_msg)
                             else:
-                                show_live_status(
-                                    status_placeholder,
-                                    "Yerel Model (phi-4-mini) ile Yapısal Veri Çıkarımı ve Sentez Yapılıyor" if target_lang == "tr"
-                                    else "Local SLM (phi-4-mini) extracting structured data and synthesizing answer"
-                                )
-                                print("  [3/3] Yerel Model (phi-4-mini) Yanıt Üretiyor...", flush=True)
+                                print("  [3/3] Yerel Phi-4-mini Sentez Yanıtı Üretiyor...", flush=True)
                                 context_chunks = [c["content"] for c in chunks]
+
+                                # Deterministik Pydantic Extraction & Verification katmanı
                                 pydantic_matched = False
                                 verified_metrics_str = ""
-
                                 try:
                                     extract_prompt = format_extraction_prompt(query_to_run, context_chunks)
                                     raw_json = query_foundry(EXTRACTION_SYSTEM_PROMPT, extract_prompt, temperature=0.0, max_tokens=768)
@@ -3084,14 +3097,20 @@ with tab_chat:
                                         synthesis_prompt = (
                                             f"Doğrulanmış Rapor Metrikleri:\n{verified_metrics_str}\n\n"
                                             f"Soru: {query_to_run}\n\n"
-                                            f"Doğrudan Türkçe Yönetici Özeti ve Yanıt:"
+                                            f"Lütfen şu standart 3 bölümde yanıt ver:\n"
+                                            f"### 🎯 Doğrudan Yanıt\n> **Net Cevap:** [Sorunun kesin cevabını İLK CÜMLEDE açıkça ver]\n\n"
+                                            f"### 📊 Doğrulanmış Rapor Tablosu & Veri Detayı\n[Markdown tablosu]\n\n"
+                                            f"### 💡 Stratejik Aksiyon & Kaynak\n[1-2 kısa madde]"
                                         )
                                     else:
                                         s_system = get_factual_synthesis_prompt("en")
                                         synthesis_prompt = (
                                             f"Verified Report Metrics:\n{verified_metrics_str}\n\n"
                                             f"Question: {query_to_run}\n\n"
-                                            f"Direct Executive Answer:"
+                                            f"Format in standardized sections:\n"
+                                            f"### 🎯 Direct Answer\n> **Direct Answer:** [Direct answer upfront]\n\n"
+                                            f"### 📊 Verified Metrics Table\n[Markdown table]\n\n"
+                                            f"### 💡 Strategic Action\n[1-2 concise bullets]"
                                         )
                                     stream_gen = query_foundry_stream(s_system, synthesis_prompt)
                                 else:
@@ -3108,11 +3127,14 @@ with tab_chat:
                                             stream_gen = stream_static_text(not_found_msg)
                                         else:
                                             summary_system = (
-                                                "Sen uzman bir Sürdürülebilirlik Baş Danışmanısın. Aşağıda verilen doğrulanmış İngilizce rapor bulgularını kullanarak soruyu; 1-2 cümlelik akıcı bir Yönetici Özeti ve ardından önemli bulguları içeren son derece duru, kurumsal ve doğal bir Türkçe ile yanıtla. "
-                                                "Teknik verileri, birimleri (mtCO2e, GW, MWh, %) ve şirket hedeflerini tam olarak koru. Soruyu baştan tekrar etme, çeviri kokan veya devrik cümlelerden kesinlikle kaçın. Tekrara düşme."
+                                                "Sen uzman bir Kurumsal Sürdürülebilirlik Danışmanısın. Cevabını her soru için istisnasız şu 3 standart bölümde sun:\n"
+                                                "1. '### 🎯 Doğrudan Yanıt': Sorunun geçerli, net ve kesin cevabını İLK OLARAK 1-2 cümlede açıkça ver. Aranan sayı, oran, proje veya kurum adını en başta belirt.\n"
+                                                "2. '### 📊 Doğrulanmış Rapor Tablosu & Veri Detayı': Raporlanan metrikleri, göstergeleri veya bölgesel projeleri temiz bir Markdown Tablosu (`| Gösterge / Proje | Değer / Durum | Detay / Kapsam |`) halinde listele.\n"
+                                                "3. '### 💡 Stratejik Aksiyon & Kaynak': Microsoft'un raporda açıkladığı temel aksiyonu 1-2 kısa maddede özetle.\n"
+                                                "Gereksiz giriş lakırdılarından, soruyu baştan tekrar etmekten ve laf kalabalığından kesinlikle kaçın. Sayıları ve birimleri tam koru."
                                             )
                                             user_prompt_formatted = (
-                                                f"Soru: {query_to_run}\n\nDoğrulanmış Rapor Bulguları:\n{factual_en}\n\nDoğrudan Türkçe Yönetici Özeti ve Yanıt:"
+                                                f"Soru: {query_to_run}\n\nDoğrulanmış Rapor Bulguları:\n{factual_en}\n\nStandardize Edilmiş Türkçe Yanıt:"
                                             )
                                             stream_gen = query_foundry_stream(
                                                 summary_system,
@@ -3120,10 +3142,14 @@ with tab_chat:
                                             )
                                     else:
                                         summary_system = (
-                                            "You are a senior Sustainability Advisor. Using ONLY the provided official Microsoft report context, explain clearly with a 1-2 sentence human-friendly Executive Summary followed by key findings or reported actions in fluent, professional English. Retain all exact metrics and units without redundant repetition. If not in context, state 'I cannot find information regarding this in the provided Microsoft Environmental Sustainability reports.'"
+                                            "You are a Senior Sustainability Advisor. Structure your answer using this standardized 3-part format:\n"
+                                            "1. '### 🎯 Direct Answer': State the exact, valid answer immediately in the first 1-2 sentences. Highlight numbers, names, or percentages upfront.\n"
+                                            "2. '### 📊 Verified Metrics & Report Findings Table': Present findings or comparisons in a clean, concise Markdown table.\n"
+                                            "3. '### 💡 Strategic Action & Source Reference': Summarize Microsoft's core corporate action in 1-2 concise bullet points.\n"
+                                            "Avoid introductory filler, question restatements, or preamble. Retain exact metrics and units without alteration."
                                         )
                                         user_prompt_formatted = (
-                                            f"Context:\n{context_str}\n\nQuestion: {query_to_run}\n\nExecutive Answer:"
+                                            f"Context:\n{context_str}\n\nQuestion: {query_to_run}\n\nStandardized Executive Answer:"
                                         )
                                         stream_gen = query_foundry_stream(
                                             summary_system,
