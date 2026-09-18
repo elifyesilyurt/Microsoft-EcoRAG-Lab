@@ -373,8 +373,8 @@ def query_foundry(system_prompt: str, user_prompt: str, temperature: float = 0.1
             {"role": "user", "content": user_prompt}
         ],
         "temperature": temperature,
-        "presence_penalty": 0.5,
-        "frequency_penalty": 0.5,
+        "presence_penalty": 0.15,
+        "frequency_penalty": 0.15,
         "max_tokens": max_tokens
     }
     
@@ -394,7 +394,7 @@ def query_foundry(system_prompt: str, user_prompt: str, temperature: float = 0.1
     finally:
         gc.collect()
 
-def query_foundry_stream(system_prompt: str, user_prompt: str, temperature: float = 0.15):
+def query_foundry_stream(system_prompt: str, user_prompt: str, temperature: float = 0.15, max_tokens: int = 1024):
     base_url = get_foundry_base_url()
     url = f"{base_url}/v1/chat/completions"
     headers = {
@@ -408,9 +408,9 @@ def query_foundry_stream(system_prompt: str, user_prompt: str, temperature: floa
             {"role": "user", "content": user_prompt}
         ],
         "temperature": temperature,
-        "presence_penalty": 0.5,
-        "frequency_penalty": 0.5,
-        "max_tokens": 512,
+        "presence_penalty": 0.15,
+        "frequency_penalty": 0.15,
+        "max_tokens": max_tokens,
         "stream": True
     }
     
@@ -1400,6 +1400,17 @@ if current_theme_id == "dark":
     }
     .main .block-container {
         padding-bottom: 180px !important;
+        max-width: 900px !important;
+        margin: 0 auto !important;
+    }
+    /* Tabloların taşmasını engelle */
+    div[data-testid="stChatMessage"] table {
+        width: 100% !important;
+        table-layout: auto !important;
+        word-wrap: break-word !important;
+    }
+    div[data-testid="stChatMessage"] .stMarkdown {
+        overflow-x: auto !important;
     }
     div[data-testid="stChatInput"],
     [data-testid="stChatInput"],
@@ -1731,6 +1742,16 @@ elif current_theme_id == "white":
     }
     .main .block-container {
         padding-bottom: 180px !important;
+        max-width: 900px !important;
+        margin: 0 auto !important;
+    }
+    div[data-testid="stChatMessage"] table {
+        width: 100% !important;
+        table-layout: auto !important;
+        word-wrap: break-word !important;
+    }
+    div[data-testid="stChatMessage"] .stMarkdown {
+        overflow-x: auto !important;
     }
     [data-testid="stChatInput"],
     div[data-testid="stChatInput"],
@@ -2071,6 +2092,16 @@ elif current_theme_id == "blue":
     }
     .main .block-container {
         padding-bottom: 180px !important;
+        max-width: 900px !important;
+        margin: 0 auto !important;
+    }
+    div[data-testid="stChatMessage"] table {
+        width: 100% !important;
+        table-layout: auto !important;
+        word-wrap: break-word !important;
+    }
+    div[data-testid="stChatMessage"] .stMarkdown {
+        overflow-x: auto !important;
     }
 
     .stApp div[data-testid="stPills"] [aria-pressed="true"],
@@ -2472,6 +2503,16 @@ else:
     }
     .main .block-container {
         padding-bottom: 180px !important;
+        max-width: 900px !important;
+        margin: 0 auto !important;
+    }
+    div[data-testid="stChatMessage"] table {
+        width: 100% !important;
+        table-layout: auto !important;
+        word-wrap: break-word !important;
+    }
+    div[data-testid="stChatMessage"] .stMarkdown {
+        overflow-x: auto !important;
     }
     [data-testid="stChatInput"],
     div[data-testid="stChatInput"],
