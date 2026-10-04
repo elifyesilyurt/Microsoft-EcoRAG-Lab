@@ -21,19 +21,7 @@
 
 ---
 
-## 🎥 Live Video Demo (YouTube)
 
-Watch the end-to-end interactive demonstration of Microsoft EcoRAG Lab running entirely on-device with `phi-4-mini`, real-time streaming, PAL deterministic calculations, and multi-theme Streamlit interface:
-
-<div align="center">
-
-[![Microsoft EcoRAG Lab Live Demo](https://img.youtube.com/vi/vYcT6NhWmaY/maxresdefault.jpg)](https://www.youtube.com/watch?v=vYcT6NhWmaY)
-
-**[▶️ Watch on YouTube: Microsoft EcoRAG Lab — Zero-Hallucination Deterministic ESG Engine](https://www.youtube.com/watch?v=vYcT6NhWmaY)**
-
-</div>
-
----
 
 ## 📸 Visual Showcase & User Interface
 
